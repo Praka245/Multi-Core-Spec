@@ -257,23 +257,8 @@ for(i = 0; i < 64; i = i + 1)
 
 # 10. Interface Connections
 
-```text
-                        +-----------+
-PC -------------------> |           |
-                        |           |
-ALUOut ---------------> | IorD MUX  |
-                        |           |
-                        +-----------+
-                              │
-                              ▼
-                     +------------------+
-                     |  Unified Memory  |
-                     +------------------+
-                        │          │
-                        │          │
-                        ▼          ▼
-             Instruction Register   Memory Data Register
-```
+<img width="371" height="501" alt="image" src="https://github.com/user-attachments/assets/a8577936-e260-4b54-849d-1681f65ce1c9" />
+
 
 ---
 
