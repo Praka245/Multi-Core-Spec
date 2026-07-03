@@ -18,19 +18,19 @@ Unlike a Single-Cycle processor where all control signals are generated simultan
 
 ---
 
-# 2. Function
-
 The Main Control FSM performs the following functions:
 
 - Controls instruction fetch.
 - Controls instruction decode.
-- Controls ALU operations.
 - Controls register operand loading.
-- Controls memory access.
+- Controls ALU operations.
+- Controls memory address calculation.
+- Controls memory read and write operations.
 - Controls register write-back.
 - Controls Program Counter updates.
-- Determines the next execution state.
 - Generates all datapath control signals.
+- Determines the next execution state based on the current state and instruction opcode.
+- Supports execution of all instructions implemented in the RV32I Version-1 processor.
 
 ---
 
@@ -42,15 +42,19 @@ The Main Control FSM performs the following functions:
 |--------|------:|-----------|-------------|
 | `clk` | 1 | Input | System clock |
 | `reset` | 1 | Input | Active-low asynchronous reset |
-| `opcode` | 7 | Input | Instruction opcode from Instruction Register |
-| `funct3` | 3 | Input | Function field for branch/load/store operations |
-| `zero` | 1 | Input | Zero flag from ALU |
+| `opcode` | 7 | Input | Instruction opcode from the Instruction Register |
+| `funct3` | 3 | Input | Function field used for branch instruction decoding |
+| `zero` | 1 | Input | Zero flag from the ALU (used by `beq` and `bne`) |
+
+``` This reflects how the current Version-1 processor uses funct3.```
 
 ---
 
 ## Outputs
 
 <img width="1073" height="426" alt="image" src="https://github.com/user-attachments/assets/07e3646f-25a7-47e3-aa15-f0d59dd45550" />
+
+<0>
 
 | Signal | Width | Description |
 |--------|------:|-------------|
@@ -96,22 +100,23 @@ Different instruction types visit different states.
 
 ---
 
+
 # 5. FSM States
 
 | State | Name | Purpose |
 |------:|------|---------|
-| S0 | Instruction Fetch | Fetch instruction from memory |
-| S1 | Instruction Decode | Decode instruction and read registers |
-| S2 | Execute (R-Type) | Execute ALU operation |
-| S3 | Execute (I-Type ALU) | Execute immediate ALU operation |
-| S4 | Address Calculation | Calculate effective memory address |
-| S5 | Memory Read | Read memory (`lw`) |
-| S6 | Memory Write | Write memory (`sw`) |
-| S7 | Write Back (ALU) | Write ALU result to Register File |
-| S8 | Write Back (Load) | Write loaded data to Register File |
-| S9 | Branch | Evaluate branch condition |
-| S10 | Jump | Execute `jal` / `jalr` |
-| S11 | U-Type | Execute `lui` / `auipc` |
+| S0 | Instruction Fetch | Fetch instruction and increment Program Counter |
+| S1 | Instruction Decode | Decode instruction, read Register File and generate immediate |
+| S2 | Execute (R-Type) | Execute R-Type ALU instruction |
+| S3 | Execute (I-Type ALU) | Execute I-Type arithmetic/logical instruction |
+| S4 | Address Calculation | Calculate effective memory address for `lw` and `sw` |
+| S5 | Memory Read | Read data memory (`lw`) |
+| S6 | Memory Write | Write data memory (`sw`) |
+| S7 | Register Write-Back | Write ALU result to Register File |
+| S8 | Load Write-Back | Write loaded data (MDR) to Register File |
+| S9 | Branch | Evaluate branch condition and update Program Counter if taken |
+| S10 | Jump | Execute `jal` and `jalr` instructions |
+| S11 | U-Type Execute | Execute `lui` and `auipc` instructions |
 
 These state numbers are recommendations and may be modified during implementation.
 
@@ -302,10 +307,18 @@ PC ← Branch Target
 
 Operations
 
-```text
+```
+
 PC ← Jump Target
 
-Write Return Address
+rd ← PC + 4
+
+```
+
+For:
+```
+- `jal`
+- `jalr`
 ```
 
 ---
@@ -317,9 +330,19 @@ Operations
 ```text
 LUI
 
-or
+↓
+
+Write Immediate to Register
 
 AUIPC
+
+↓
+
+ALU computes PC + Immediate
+
+↓
+
+Write Result to Register
 ```
 
 ---
@@ -327,27 +350,52 @@ AUIPC
 # 7. State Transition Diagram
 
 ```text
-         +------+
-         | S0   |
-         +------+
-             │
-             ▼
-         +------+
-         | S1   |
-         +------+
-     ┌────┼───────┬────────┬────────┐
-     ▼    ▼       ▼        ▼        ▼
-    S2    S3      S4       S9      S10
-     │     │     ┌──┴──┐     │        │
-     ▼     ▼     ▼     ▼     ▼        ▼
-    S7    S7    S5     S6    S0      S7
-                 │
-                 ▼
-                S8
-                 │
-                 ▼
-                S0
+                    +------+
+                    | S0   |
+                    |Fetch |
+                    +------+
+                        │
+                        ▼
+                    +------+
+                    | S1   |
+                    |Decode|
+                    +------+
+       ┌─────────────┼──────────────┬─────────────┬─────────────┬─────────────┐
+       ▼             ▼              ▼             ▼             ▼             ▼
+   +------+      +------+       +------+      +------+      +------+      +------+
+   | S2   |      | S3   |       | S4   |      | S9   |      | S10  |      | S11  |
+   |R-Type|      |I-Type|       |Addr  |      |Branch|      | Jump |      |U-Type|
+   +------+      +------+       +------+      +------+      +------+      +------+
+       │             │           ┌──┴──┐           │             │             │
+       ▼             ▼           ▼     ▼           ▼             ▼             ▼
+   +------+      +------+    +------+ +------+  +------+     +------+     +------+
+   | S7   |      | S7   |    | S5   | | S6   |  | S0   |     | S7   |     | S7   |
+   |WB ALU|      |WB ALU|    |Mem Rd| |Mem Wr|  |Fetch |     |WB Jmp|     |WB U  |
+   +------+      +------+    +------+ +------+  +------+     +------+     +------+
+                                  │                                   │
+                                  ▼                                   ▼
+                              +------+
+                              | S8   |
+                              |WB LW |
+                              +------+
+                                  │
+                                  ▼
+                              +------+
+                              | S0   |
+                              |Fetch |
+                              +------+
 ```
+
+| Instruction Type                                    | Path                        |
+| --------------------------------------------------- | --------------------------- |
+| R-Type                                              | S0 → S1 → S2 → S7 → S0      |
+| I-Type (ALU Immediate)                              | S0 → S1 → S3 → S7 → S0      |
+| Load (`lw`)                                         | S0 → S1 → S4 → S5 → S8 → S0 |
+| Store (`sw`)                                        | S0 → S1 → S4 → S6 → S0      |
+| Branch (`beq`, `bne`, `blt`, `bge`, `bltu`, `bgeu`) | S0 → S1 → S9 → S0           |
+| Jump (`jal`, `jalr`)                                | S0 → S1 → S10 → S7 → S0     |
+| U-Type (`lui`, `auipc`)                             | S0 → S1 → S11 → S7 → S0     |
+
 
 ---
 
@@ -425,41 +473,60 @@ Write Back
 
 # 10. Design Assumptions
 
-- RV32I Base ISA
+# 10. Design Assumptions
+
+- RV32I Base Integer ISA
+- 32-bit datapath
 - Multi-Cycle architecture
-- One instruction executed at a time
 - Von Neumann Architecture
-- Positive-edge-triggered FSM
+- One instruction is executed at a time
+- Positive-edge-triggered Moore FSM
+- Supports the following instruction groups:
+  - R-Type
+  - I-Type Arithmetic
+  - `lw`
+  - `sw`
+  - Branch (`beq`, `bne`, `blt`, `bge`, `bltu`, `bgeu`)
+  - `jal`
+  - `jalr`
+  - `lui`
+  - `auipc`
 
 ---
 
+
 # 11. Future Scalability
 
-This module can later support
+This module can later support:
 
 - RV64I
-- M Extension
-- CSR Instructions
-- Interrupt handling
-- Exception handling
-- Pipeline controller
+- RV128I
+- Integer Multiplication and Division (`M` Extension)
+- CSR Instructions (`Zicsr`)
+- Interrupt Handling
+- Exception Handling
+- Pipeline Control
+- Branch Prediction
+- Speculative Execution
 
 ---
 
 # 12. Verification Checklist
 
-The testbench shall verify
+The testbench shall verify:
 
-- Reset enters Fetch state.
+- Reset enters the Instruction Fetch state.
 - Correct state transitions.
-- Correct control signal generation.
-- R-Type execution.
-- I-Type execution.
-- Load execution.
-- Store execution.
-- Branch execution.
-- Jump execution.
-- U-Type execution.
+- Correct control signal generation for each state.
+- R-Type instruction execution.
+- I-Type arithmetic instruction execution.
+- `lw` execution.
+- `sw` execution.
+- Branch instruction execution (`beq`, `bne`, `blt`, `bge`, `bltu`, `bgeu`).
+- `jal` execution.
+- `jalr` execution.
+- `lui` execution.
+- `auipc` execution.
 - Illegal opcode handling.
 - Consecutive instruction execution.
 
@@ -487,3 +554,4 @@ The testbench shall verify
 | Reset | Active-low asynchronous |
 | Inputs | `clk`, `reset`, `opcode`, `funct3`, `zero` |
 | Outputs | All processor control signals |
+| Supported RV32I Instructions | R-Type, I-Type Arithmetic, `lw`, `sw`, `beq`, `bne`, `blt`, `bge`, `bltu`, `bgeu`, `jal`, `jalr`, `lui`, `auipc` |
