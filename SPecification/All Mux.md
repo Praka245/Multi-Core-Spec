@@ -332,12 +332,11 @@ assign write_data = (MemtoReg) ? mdr : alu_out;
 - 2-to-1 Multiplexer
 - 32-bit Wide
 - Combinational Logic
-````
 
 ### Summary
 
 | Module           | MUX Type |  Width |     Select |
-| ---------------- | -------- | -----: | ---------: |
+| ---------------- | -------- | -----: | ---------- |
 | `iord_mux.v`     | 2:1      | 32-bit |     `IorD` |
 | `alusrca_mux.v`  | 2:1      | 32-bit |  `ALUSrcA` |
 | `alusrcb_mux.v`  | 4:1      | 32-bit |  `ALUSrcB` |
