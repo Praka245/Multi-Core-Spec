@@ -2,6 +2,11 @@
 
 - In this repo the specification for all the individual modules are available in the `Specification folder`
 
+
+<img width="1157" height="844" alt="Screenshot 2026-07-01 161035" src="https://github.com/user-attachments/assets/4d614715-041c-43fe-be1f-adfb87e19d8c" />
+
+
+
 ```
 rtl/
 │
