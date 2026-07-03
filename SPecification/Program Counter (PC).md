@@ -134,22 +134,8 @@ This ensures execution always starts from address zero after reset.
 
 # 9. Interface Connections
 
-```text
-                 +----------------+
-                 |  PCSource MUX  |
-                 +----------------+
-                         │
-                         │ pc_next
-                         ▼
-                  +-------------+
-                  | Program     |
-                  | Counter     |
-                  +-------------+
-                         │
-                         │ pc
-                         ▼
-                 Unified Memory
-```
+<img width="648" height="477" alt="image" src="https://github.com/user-attachments/assets/0afd1b60-7676-48ef-bbec-4de1963bda34" />
+
 
 ---
 
