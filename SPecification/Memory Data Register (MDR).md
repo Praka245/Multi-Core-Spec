@@ -136,22 +136,8 @@ mdr_out = 32'h00000000
 
 # 9. Interface Connections
 
-```text
-                 Unified Memory
-                       │
-                       │ read_data
-                       ▼
-            +----------------------+
-            | Memory Data Register |
-            +----------------------+
-                      │
-                      │ mdr_out
-                      ▼
-                 MemtoReg MUX
-                      │
-                      ▼
-                Register File
-```
+<img width="604" height="592" alt="image" src="https://github.com/user-attachments/assets/66472083-71e5-496a-9c2d-a34bdecf6176" />
+
 
 ---
 
