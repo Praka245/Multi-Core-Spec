@@ -38,7 +38,7 @@ The Program Counter performs the following functions:
 |--------|------:|-----------|-------------|
 | `clk` | 1 | Input | System clock |
 | `reset` | 1 | Input | Active-low asynchronous reset |
-| `pc_write` | 1 | Input | Enables updating the PC |
+| `pc_write_enb` | 1 | Input | Enables updating the PC |
 | `pc_next` | 32 | Input | Next PC value selected by the PCSource MUX |
 
 ### Outputs
