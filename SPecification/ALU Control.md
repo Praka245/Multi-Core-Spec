@@ -12,9 +12,9 @@
 
 The **ALU Control** module generates the specific operation to be performed by the **Arithmetic Logic Unit (ALU)**.
 
-The Main Control FSM determines only the **type of ALU operation** required (for example, Arithmetic, Branch Comparison, Address Calculation, or Logical Operation) by generating the `ALUOp` control signal.
+The Main Control FSM generates the high-level control signal `ALUOp`, which specifies the general class of ALU operation required (for example, address calculation, branch comparison, or instruction decoding).
 
-The ALU Control further decodes the instruction fields (`funct3` and `funct7`) together with `ALUOp` to generate the final control code that selects the required ALU operation.
+The ALU Control module combines `ALUOp` with the instruction fields (`funct3` and `funct7`) to generate the final control code that selects the required ALU operation.
 
 This two-level decoding simplifies the design of the Main Control FSM and makes the processor easier to extend.
 
@@ -28,7 +28,12 @@ The ALU Control performs the following functions:
 - Decodes the instruction function fields (`funct3` and `funct7`).
 - Determines the exact ALU operation required.
 - Generates the ALU control signal.
-- Supports all arithmetic, logical, comparison, and shift operations defined by the RV32I Base Integer ISA.
+- Supports all ALU operations required by the RV32I Base Integer ISA, including:
+  - Arithmetic operations
+  - Logical operations
+  - Shift operations
+  - Comparison operations
+  - Address calculation operations
 
 ---
 
@@ -56,13 +61,12 @@ The ALU Control performs the following functions:
 
 The Main Control FSM provides one of the following ALU operation groups.
 
-| ALUOp | Meaning |
-|-------:|---------|
-| 00 | Address calculation (ADD) |
-| 01 | Branch comparison (SUB) |
-| 10 | Decode instruction using `funct3` and `funct7` |
-| 11 | Reserved for future extensions |
-
+| ALUOp | Meaning | Used By |
+|-------:|---------|---------|
+| 00 | Address Calculation (ADD) | `lw`, `sw`, `jal`, `jalr`, `auipc`, `PC + 4` |
+| 01 | Branch Comparison (SUB) | `beq`, `bne` |
+| 10 | Decode using `funct3` and `funct7` | R-Type and I-Type Arithmetic/Logical Instructions |
+| 11 | Reserved for Future Extensions | RV64I / ISA Extensions |
 ---
 
 # 5. ALU Control Encoding
@@ -102,12 +106,16 @@ The ALU always performs
 ADD
 ```
 
-This is used by
+Used for:
 
-- Instruction Fetch (PC + 4)
+- Instruction Fetch (`PC + 4`)
 - Load (`lw`)
 - Store (`sw`)
-- AUIPC
+- Jump (`jal`)
+- Jump Register (`jalr`)
+- `auipc`
+- Memory address calculation
+- Branch target address calculation
 
 Output
 
@@ -133,11 +141,14 @@ SUB
 
 The subtraction result is used to generate the Zero flag for branch decisions.
 
-Used by
+Used by:
 
-- BEQ
-- BNE
+- `beq`
+- `bne`
 
+The ALU performs subtraction.
+
+The generated **Zero** flag is used by the Branch Logic or Main Control FSM to determine whether the branch should be taken.
 Output
 
 ```text
@@ -172,6 +183,20 @@ Examples
 | SRA | 0100000 | 101 | SRA |
 
 The same decoding is used for the corresponding I-Type instructions (`ADDI`, `ANDI`, `ORI`, `XORI`, `SLTI`, `SLTIU`, `SLLI`, `SRLI`, `SRAI`).
+
+The ALU Control also supports:
+
+| Instruction | ALU Operation |
+|-------------|---------------|
+| ADDI | ADD |
+| ANDI | AND |
+| ORI | OR |
+| XORI | XOR |
+| SLTI | SLT |
+| SLTIU | SLTU |
+| SLLI | SLL |
+| SRLI | SRL |
+| SRAI | SRA |
 
 ---
 
@@ -262,7 +287,28 @@ This reduces the complexity of the Main Control FSM and allows the ALU operation
 
 ## Why Use `ALUOp`?
 
-Many instructions require identical ALU operations.
+Many RV32I instructions require the same ALU operation.
+
+For example,
+
+- `lw`
+- `sw`
+- `jal`
+- `jalr`
+- `auipc`
+- `PC + 4`
+
+all require an ADD operation.
+
+Instead of decoding every instruction individually, the Main Control FSM simply generates
+
+```text
+ALUOp = 00
+```
+
+The ALU Control then generates the corresponding ADD control signal.
+
+This significantly simplifies the Main Control FSM.
 
 For example,
 
@@ -287,12 +333,14 @@ This simplifies the overall control logic.
 
 ---
 
+
 # 12. Design Assumptions
 
 - RV32I Base Integer ISA
 - 32-bit datapath
 - 4-bit ALU control output
-- Combinational logic
+- Supports all RV32I arithmetic, logical, comparison, and shift operations
+- Purely combinational logic
 - Compatible with Module 9 (`alu.v`)
 
 ---
@@ -302,10 +350,12 @@ This simplifies the overall control logic.
 This module can later support:
 
 - RV64I
-- M Extension (Multiply/Divide)
-- Bit Manipulation Extension
+- RV128I
+- Integer Multiplication (`M` Extension)
+- Integer Division (`M` Extension)
+- Bit Manipulation (`B` Extension)
+- Floating-Point Extensions (`F` and `D`)
 - Custom ALU operations
-- Floating-point ALU control
 
 ---
 
@@ -346,4 +396,4 @@ The testbench shall verify:
 | Type | Combinational |
 | Clock | Not Required |
 | Reset | Not Required |
-| Supported Operations | ADD, SUB, AND, OR, XOR, SLT, SLTU, SLL, SRL, SRA |
+Supported Operations | ADD, SUB, AND, OR, XOR, SLT, SLTU, SLL, SRL, SRA (All RV32I ALU Operations)
