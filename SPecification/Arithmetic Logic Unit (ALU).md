@@ -27,14 +27,14 @@ The ALU performs the following functions:
 - Bitwise AND
 - Bitwise OR
 - Bitwise XOR
-- Set Less Than (signed)
+- Set Less Than (Signed)
 - Set Less Than Unsigned
 - Logical Left Shift
 - Logical Right Shift
 - Arithmetic Right Shift
-- Branch comparison
 - Memory address calculation
 - Branch target address calculation
+- Jump target address calculation
 - Program Counter increment (PC + 4)
 
 ---
@@ -57,9 +57,6 @@ The ALU performs the following functions:
 |--------|------:|-----------|-------------|
 | `alu_result` | 32 | Output | Result of the selected ALU operation |
 | `zero` | 1 | Output | Asserted when ALU result equals zero |
-| `negative` | 1 | Output | Asserted when result is negative |
-| `carry` | 1 | Output | Carry-out from addition/subtraction |
-| `overflow` | 1 | Output | Signed arithmetic overflow |
 
 ---
 
@@ -103,15 +100,18 @@ All operands are selected through multiplexers.
 alu_result = operand_a + operand_b
 ```
 
-Used for
+Used for:
 
-- ADD
-- ADDI
-- AUIPC
-- Address calculation
-- PC + 4
-- PC + Immediate
-
+- `add`
+- `addi`
+- `lw`
+- `sw`
+- `auipc`
+- `jal`
+- `jalr`
+- Program Counter increment (`PC + 4`)
+- Branch target address calculation (`PC + Immediate`)
+- Memory address calculation (`Base Register + Immediate`)
 ---
 
 ## Subtraction
@@ -120,10 +120,16 @@ Used for
 alu_result = operand_a - operand_b
 ```
 
-Used for
+Used for:
 
-- SUB
-- Branch comparisons
+- `sub`
+- `beq`
+- `bne`
+
+For `beq` and `bne`, the ALU subtracts the two operands and generates the **Zero** flag.
+
+- `Zero = 1` → operands are equal (`beq`)
+- `Zero = 0` → operands are not equal (`bne`)
 
 ---
 
@@ -154,40 +160,30 @@ alu_result = operand_a ^ operand_b
 ## Signed Less Than
 
 ```text
-alu_result =
-
-1
-
-if
-
-operand_a < operand_b
-
-(signed)
-
-otherwise
-
-0
+alu_result = (Signed(operand_a) < Signed(operand_b)) ? 32'd1 : 32'd0
 ```
+
+Used for:
+
+- `slt`
+- `slti`
+- `blt`
+- `bge`
 
 ---
 
 ## Unsigned Less Than
 
 ```text
-alu_result =
-
-1
-
-if
-
-operand_a < operand_b
-
-(unsigned)
-
-otherwise
-
-0
+alu_result = (operand_a < operand_b) ? 32'd1 : 32'd0
 ```
+
+Used for:
+
+- `sltu`
+- `sltiu`
+- `bltu`
+- `bgeu`
 
 ---
 
@@ -219,13 +215,18 @@ alu_result = $signed(operand_a) >>> operand_b[4:0]
 
 ## Zero Flag
 
+Used by:
+
+- `beq`
+- `bne`
+
+The Zero flag is asserted when:
+
 ```text
-zero = 1
-
-if
-
 alu_result == 0
 ```
+
+For branch instructions, it indicates whether the subtraction result is zero.
 
 Used by
 
@@ -234,7 +235,7 @@ Used by
 
 ---
 
-## Negative Flag
+## Negative Flag  - not for now
 
 ```text
 negative = alu_result[31]
@@ -247,7 +248,7 @@ Useful for
 
 ---
 
-## Carry Flag
+## Carry Flag  - not for now
 
 Generated during
 
@@ -260,7 +261,7 @@ Useful for
 
 ---
 
-## Overflow Flag
+## Overflow Flag - not for now
 
 Generated only during signed
 
@@ -358,25 +359,28 @@ Although only the **Zero flag** is required for the initial RV32I Multi-Cycle im
 
 # 12. Design Assumptions
 
-- RV32I Base ISA
+- RV32I Base Integer ISA
 - 32-bit datapath
 - Two 32-bit operands
+- Supports all arithmetic and logical operations required by the RV32I Base ISA
 - Combinational ALU
-- One operation performed at a time
+- One ALU operation is performed per clock cycle
 
 ---
+
 
 # 13. Future Scalability
 
 This module can later support:
 
 - RV64I
-- Multiply (M Extension)
-- Divide (M Extension)
-- Bit-Manipulation Extension
-- Saturating arithmetic
-- Floating-point interface
-
+- RV128I
+- Integer Multiplication (`M` Extension)
+- Integer Division (`M` Extension)
+- Bit Manipulation (`B` Extension)
+- Floating-Point Interface (`F` and `D` Extensions)
+- Saturating Arithmetic
+- SIMD Extensions
 ---
 
 # 14. Verification Checklist
@@ -423,7 +427,7 @@ The testbench shall verify:
 | Category | Datapath |
 | Operand Width | 32 bits |
 | Result Width | 32 bits |
-| Operations | ADD, SUB, AND, OR, XOR, SLT, SLTU, SLL, SRL, SRA |
+Operations | ADD, SUB, AND, OR, XOR, SLT, SLTU, SLL, SRL, SRA (Supports all RV32I ALU operations)
 | Flags | Zero, (Negative, Carry, Overflow) - Not for now |
 | Type | Combinational |
 | Clock | Not Required |
