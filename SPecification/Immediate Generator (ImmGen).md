@@ -56,11 +56,17 @@ The Immediate Generator performs the following functions:
 
 | Format | Supported Instructions |
 |---------|------------------------|
-| I-Type | `addi`, `andi`, `ori`, `xori`, `slti`, `sltiu`, `slli`, `srli`, `srai`, `jalr`, `lb`, `lh`, `lw`, `lbu`, `lhu` |
-| S-Type | `sb`, `sh`, `sw` |
+| I-Type | `addi`, `andi`, `ori`, `xori`, `slti`, `sltiu`, `slli`, `srli`, `srai`, `jalr`, `lw` |
+| S-Type | `sw` |
 | B-Type | `beq`, `bne`, `blt`, `bge`, `bltu`, `bgeu` |
 | U-Type | `lui`, `auipc` |
 | J-Type | `jal` |
+
+> **Note**
+>
+> This Version-1 implementation supports only **32-bit word load (`lw`)** and **32-bit word store (`sw`)** instructions.
+>
+> Byte and halfword memory access instructions (`lb`, `lh`, `lbu`, `lhu`, `sb`, `sh`) will be supported in a future version by extending the Unified Memory module.
 
 ---
 
@@ -352,10 +358,31 @@ to the immediate.
 
 # 11. Design Assumptions
 
-- RV32I Base ISA
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/fee30ecd-993c-470f-8860-26859dd1a4f4" />
+
+
+---
+
+- RV32I Base Integer ISA
 - 32-bit instruction width
 - 32-bit datapath
-- Supports I, S, B, U and J instruction formats
+- Supports all RV32I immediate formats:
+  - I-Type
+  - S-Type
+  - B-Type
+  - U-Type
+  - J-Type
+- Version-1 processor supports:
+  - R-Type instructions
+  - I-Type arithmetic instructions
+  - `lw`
+  - `sw`
+  - Branch instructions
+  - `jal`
+  - `jalr`
+  - `lui`
+  - `auipc`
+- Byte and halfword memory access instructions (`lb`, `lh`, `lbu`, `lhu`, `sb`, `sh`) are reserved for future versions.
 - Purely combinational logic
 
 ---
@@ -367,7 +394,11 @@ This module can later support:
 - RV64I
 - Compressed Instructions (RVC)
 - Custom ISA extensions
-- Immediate generation for future instruction formats
+- Byte load instructions (`lb`, `lbu`)
+- Halfword load instructions (`lh`, `lhu`)
+- Byte store instruction (`sb`)
+- Halfword store instruction (`sh`)
+- Additional immediate generation for future ISA extensions
 
 ---
 
