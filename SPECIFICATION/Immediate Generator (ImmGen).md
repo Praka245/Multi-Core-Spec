@@ -72,160 +72,11 @@ The Immediate Generator performs the following functions:
 
 # 5. Immediate Formats
 
-## I-Type Immediate
 
-Instruction Format
 
-```text
-31                      20
-+------------------------+
-|      imm[11:0]         |
-+------------------------+
-```
+<img width="889" height="195" alt="image" src="https://github.com/user-attachments/assets/a4779dc6-8692-41ca-b600-f534fedb77b0" />
 
-Generated Immediate
-
-```text
-imm_out = SignExtend(instruction[31:20])
-```
-
-Width
-
-```text
-12 bits → 32 bits
-```
-
----
-
-## S-Type Immediate
-
-Instruction Format
-
-```text
-31      25 24      20 19      15 14   12 11      7 6      0
-+---------+----------+----------+-------+---------+--------+
-| imm[11:5] |   rs2   |   rs1    | funct3| imm[4:0]| opcode |
-+---------+----------+----------+-------+---------+--------+
-```
-
-Generated Immediate
-
-```text
-imm_out = SignExtend({instruction[31:25], instruction[11:7]})
-```
-
-Width
-
-```text
-12 bits → 32 bits
-```
-
----
-
-## B-Type Immediate
-
-Instruction Format
-
-```text
-31   30:25   24:20   19:15 14:12 11:8 7    6:0
-+--+--------+-------+------+-----+----+-------+
-|12|10:5    | rs2   | rs1  |funct|4:1 |11|opcode|
-+--+--------+-------+------+-----+----+-------+
-```
-
-Generated Immediate
-
-```text
-imm_out =
-SignExtend(
-{
-instruction[31],
-instruction[7],
-instruction[30:25],
-instruction[11:8],
-1'b0
-})
-```
-
-Notice
-
-```text
-Bit[0] is always zero
-```
-
-because branch targets are always aligned.
-
-Width
-
-```text
-13 bits → 32 bits
-```
-
----
-
-## U-Type Immediate
-
-Instruction Format
-
-```text
-31                     12
-+-----------------------+
-|      imm[31:12]       |
-+-----------------------+
-```
-
-Generated Immediate
-
-```text
-imm_out =
-{
-instruction[31:12],
-12'b000000000000
-}
-```
-
-No sign extension is required.
-
-The lower 12 bits are filled with zeros.
-
----
-
-## J-Type Immediate
-
-Instruction Format
-
-```text
-31 30:21 20 19:12
-+--+------+--+--------+
-|20|10:1  |11|19:12   |
-+--+------+--+--------+
-```
-
-Generated Immediate
-
-```text
-imm_out =
-SignExtend(
-{
-instruction[31],
-instruction[19:12],
-instruction[20],
-instruction[30:21],
-1'b0
-})
-```
-
-Notice
-
-```text
-Bit[0] is always zero
-```
-
-Width
-
-```text
-21 bits → 32 bits
-```
+ > SB is B - type ,  UJ is J - type  
 
 ---
 
@@ -236,7 +87,7 @@ The Immediate Generator continuously monitors the instruction.
 According to the instruction opcode, it automatically generates the corresponding immediate.
 
 ```text
-Instruction
+ Instruction
       │
       ▼
 Opcode Decoder
@@ -248,7 +99,7 @@ Immediate Extraction
 Sign Extension
       │
       ▼
-imm_out
+   ImmExt
 ```
 
 No clock is required.
