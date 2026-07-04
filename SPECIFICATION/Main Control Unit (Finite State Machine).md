@@ -234,6 +234,10 @@ ALU ctrl table:
 | 11    | 0110111 | XXX    | XXXXXXX | PASS B     | LUI         |
 
 >
+<img width="711" height="776" alt="image" src="https://github.com/user-attachments/assets/57cbd152-b279-48a4-868f-c9b763dd78a4" />
+
+
+>
 
 ---
 
