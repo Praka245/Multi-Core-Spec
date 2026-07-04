@@ -399,6 +399,62 @@ Write Result to Register
 
 ---
 
+## ALUControl Encoding 
+
+| ALUControl | Operation    |
+| ---------- | ------------ |
+| 0000       | ADD          |
+| 0001       | SUB          |
+| 0010       | AND          |
+| 0011       | OR           |
+| 0100       | XOR          |
+| 0101       | SLL          |
+| 0110       | SRL          |
+| 0111       | SRA          |
+| 1000       | SLT          |
+| 1001       | SLTU         |
+| 1010       | PASS B (LUI) |
+| 1111       | INVALID      |
+
+ALU ctrl table:
+
+| ALUOp | Opcode  | funct3 | funct7  | ALUControl | Instruction |
+| ----- | ------- | ------ | ------- | ---------- | ----------- |
+| 00    | 0000011 | XXX    | XXXXXXX | ADD        | LB/LH/LW    |
+| 00    | 0100011 | XXX    | XXXXXXX | ADD        | SB/SH/SW    |
+| 00    | 0010111 | XXX    | XXXXXXX | ADD        | AUIPC       |
+| 00    | 1101111 | XXX    | XXXXXXX | ADD        | JAL         |
+| 00    | 1100111 | 000    | XXXXXXX | ADD        | JALR        |
+| 01    | 1100011 | 000    | XXXXXXX | SUB        | BEQ         |
+| 01    | 1100011 | 001    | XXXXXXX | SUB        | BNE         |
+| 01    | 1100011 | 100    | XXXXXXX | SLT        | BLT         |
+| 01    | 1100011 | 101    | XXXXXXX | SLT        | BGE         |
+| 01    | 1100011 | 110    | XXXXXXX | SLTU       | BLTU        |
+| 01    | 1100011 | 111    | XXXXXXX | SLTU       | BGEU        |
+| 10    | 0110011 | 000    | 0000000 | ADD        | ADD         |
+| 10    | 0110011 | 000    | 0100000 | SUB        | SUB         |
+| 10    | 0110011 | 111    | XXXXXXX | AND        | AND         |
+| 10    | 0110011 | 110    | XXXXXXX | OR         | OR          |
+| 10    | 0110011 | 100    | XXXXXXX | XOR        | XOR         |
+| 10    | 0110011 | 001    | XXXXXXX | SLL        | SLL         |
+| 10    | 0110011 | 101    | 0000000 | SRL        | SRL         |
+| 10    | 0110011 | 101    | 0100000 | SRA        | SRA         |
+| 10    | 0110011 | 010    | XXXXXXX | SLT        | SLT         |
+| 10    | 0110011 | 011    | XXXXXXX | SLTU       | SLTU        |
+| 10    | 0010011 | 000    | XXXXXXX | ADD        | ADDI        |
+| 10    | 0010011 | 111    | XXXXXXX | AND        | ANDI        |
+| 10    | 0010011 | 110    | XXXXXXX | OR         | ORI         |
+| 10    | 0010011 | 100    | XXXXXXX | XOR        | XORI        |
+| 10    | 0010011 | 001    | 0000000 | SLL        | SLLI        |
+| 10    | 0010011 | 101    | 0000000 | SRL        | SRLI        |
+| 10    | 0010011 | 101    | 0100000 | SRA        | SRAI        |
+| 10    | 0010011 | 010    | XXXXXXX | SLT        | SLTI        |
+| 10    | 0010011 | 011    | XXXXXXX | SLTU       | SLTIU       |
+| 11    | 0110111 | XXX    | XXXXXXX | PASS B     | LUI         |
+
+
+---
+
 # 8. Timing Specification
 
 | Item | Specification |
