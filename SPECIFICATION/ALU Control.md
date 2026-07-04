@@ -8,6 +8,10 @@
 
 ---
 
+> NOTE : While design rtl we need to refer the opcode, operations  
+
+---
+
 # 1. Purpose
 
 The **ALU Control** module generates the specific operation to be performed by the **Arithmetic Logic Unit (ALU)**.
@@ -397,3 +401,85 @@ The testbench shall verify:
 | Clock | Not Required |
 | Reset | Not Required |
 Supported Operations | ADD, SUB, AND, OR, XOR, SLT, SLTU, SLL, SRL, SRA (All RV32I ALU Operations)
+
+--- 
+INPUT:
+| Signal | Width | Description                                |
+| ------ | ----: | ------------------------------------------ |
+| ALUOp  |     2 | ALU operation class from Main Control Unit |
+| opcode |     7 | Instruction opcode (`instruction[6:0]`)    |
+| funct3 |     3 | Function field (`instruction[14:12]`)      |
+| funct7 |     7 | Function field (`instruction[31:25]`)      |
+
+OUTPUT : 
+| Signal     | Width | Description                |
+| ---------- | ----: | -------------------------- |
+| ALUControl |     4 | Controls the ALU operation |
+
+ALUControl Encoding:
+| ALUControl | Operation     |
+| ---------- | ------------- |
+| 0000       | ADD           |
+| 0001       | SUB           |
+| 0010       | AND           |
+| 0011       | OR            |
+| 0100       | XOR           |
+| 0101       | SLL           |
+| 0110       | SRL           |
+| 0111       | SRA           |
+| 1000       | SLT           |
+| 1001       | SLTU          |
+| 1111       | NOP / Invalid |
+
+RV32I Instruction Support:
+| Instruction Format      | Opcode  | ALU Operation                               |
+| ----------------------- | ------- | ------------------------------------------- |
+| **R-Type**              | 0110011 | Decode using funct3/funct7                  |
+| **I-Type (Arithmetic)** | 0010011 | Decode using funct3/funct7                  |
+| **I-Type (Load)**       | 0000011 | ADD (Address Calculation)                   |
+| **I-Type (JALR)**       | 1100111 | ADD (PC + Immediate)                        |
+| **S-Type**              | 0100011 | ADD (Store Address Calculation)             |
+| **B-Type**              | 1100011 | SUB / SLT / SLTU (Comparison)               |
+| **U-Type (LUI)**        | 0110111 | PASS Immediate (or dedicated LUI operation) |
+| **U-Type (AUIPC)**      | 0010111 | ADD (PC + Immediate)                        |
+| **J-Type (JAL)**        | 1101111 | ADD (PC + Immediate)                        |
+
+Detailed ALU Control Table:
+| Format | Instruction | Opcode  | funct3  | funct7  | ALUControl      |
+| ------ | ----------- | ------- | ------- | ------- | --------------- |
+| R      | ADD         | 0110011 | 000     | 0000000 | ADD             |
+| R      | SUB         | 0110011 | 000     | 0100000 | SUB             |
+| R      | SLL         | 0110011 | 001     | 0000000 | SLL             |
+| R      | SLT         | 0110011 | 010     | XXXXXXX | SLT             |
+| R      | SLTU        | 0110011 | 011     | XXXXXXX | SLTU            |
+| R      | XOR         | 0110011 | 100     | XXXXXXX | XOR             |
+| R      | SRL         | 0110011 | 101     | 0000000 | SRL             |
+| R      | SRA         | 0110011 | 101     | 0100000 | SRA             |
+| R      | OR          | 0110011 | 110     | XXXXXXX | OR              |
+| R      | AND         | 0110011 | 111     | XXXXXXX | AND             |
+| I      | ADDI        | 0010011 | 000     | XXXXXXX | ADD             |
+| I      | SLTI        | 0010011 | 010     | XXXXXXX | SLT             |
+| I      | SLTIU       | 0010011 | 011     | XXXXXXX | SLTU            |
+| I      | XORI        | 0010011 | 100     | XXXXXXX | XOR             |
+| I      | ORI         | 0010011 | 110     | XXXXXXX | OR              |
+| I      | ANDI        | 0010011 | 111     | XXXXXXX | AND             |
+| I      | SLLI        | 0010011 | 001     | 0000000 | SLL             |
+| I      | SRLI        | 0010011 | 101     | 0000000 | SRL             |
+| I      | SRAI        | 0010011 | 101     | 0100000 | SRA             |
+| I      | LW          | 0000011 | 010     | XXXXXXX | ADD             |
+| I      | LH/LHU      | 0000011 | 001/101 | XXXXXXX | ADD             |
+| I      | LB/LBU      | 0000011 | 000/100 | XXXXXXX | ADD             |
+| I      | JALR        | 1100111 | 000     | XXXXXXX | ADD             |
+| S      | SB          | 0100011 | 000     | XXXXXXX | ADD             |
+| S      | SH          | 0100011 | 001     | XXXXXXX | ADD             |
+| S      | SW          | 0100011 | 010     | XXXXXXX | ADD             |
+| B      | BEQ         | 1100011 | 000     | XXXXXXX | SUB             |
+| B      | BNE         | 1100011 | 001     | XXXXXXX | SUB             |
+| B      | BLT         | 1100011 | 100     | XXXXXXX | SLT             |
+| B      | BGE         | 1100011 | 101     | XXXXXXX | SLT             |
+| B      | BLTU        | 1100011 | 110     | XXXXXXX | SLTU            |
+| B      | BGEU        | 1100011 | 111     | XXXXXXX | SLTU            |
+| U      | LUI         | 0110111 | XXX     | XXXXXXX | PASS Immediate* |
+| U      | AUIPC       | 0010111 | XXX     | XXXXXXX | ADD             |
+| J      | JAL         | 1101111 | XXX     | XXXXXXX | ADD             |
+
