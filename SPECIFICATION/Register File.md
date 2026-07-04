@@ -40,9 +40,9 @@ The Register File performs the following functions:
 | `clk` | 1 | Input | System clock |
 | `reset` | 1 | Input | Active-low asynchronous reset |
 | `RegWrite` | 1 | Input | Register write enable |
-| `rs1` | 5 | Input | Source Register 1 address |
-| `rs2` | 5 | Input | Source Register 2 address |
-| `rd` | 5 | Input | Destination Register address |
+| `rs1` [19-15]| 5 | Input | Source Register 1 address |
+| `rs2` [24-20]| 5 | Input | Source Register 2 address |
+| `rd` [11-7]| 5 | Input | Destination Register address |
 | `write_data` | 32 | Input | Data to be written into the destination register |
 
 ---
