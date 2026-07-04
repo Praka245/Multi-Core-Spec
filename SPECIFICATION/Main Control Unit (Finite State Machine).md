@@ -124,57 +124,331 @@ These state numbers are recommendations and may be modified during implementatio
 
 # 6. State Operations
 
+## S0 — Instruction Fetch
 
+Operations
+
+```text
+Memory Address = PC
+
+Instruction ← Memory[PC]
+
+IR ← Instruction
+
+PC ← PC + 4
+```
+
+Control Signals
+
+| Signal | Value |
+|---------|:-----:|
+| PCWrite | 1 |
+| PCWriteCond | 0 |
+| MemRead | 1 |
+| MemWrite | 0 |
+| IRWrite | 1 |
+| RegWrite | 0 |
+| IorD | 0 |
+| MemtoReg | X |
+| ALUSrcA | 0 |
+| ALUSrcB | 01 |
+| ALUOp | 00 |
+| PCSource | 00 |
+
+---
+
+## S1 — Instruction Decode / Register Fetch
+
+Operations
+
+```text
+Read Register File
+
+A ← Register[rs1]
+
+B ← Register[rs2]
+
+Generate Immediate
+
+ALUOut ← PC + Immediate
+```
+
+Control Signals
+
+| Signal | Value |
+|---------|:-----:|
+| PCWrite | 0 |
+| PCWriteCond | 0 |
+| MemRead | 0 |
+| MemWrite | 0 |
+| IRWrite | 0 |
+| RegWrite | 0 |
+| IorD | X |
+| MemtoReg | X |
+| ALUSrcA | 0 |
+| ALUSrcB | 10 |
+| ALUOp | 00 |
+| PCSource | XX |
+
+---
+
+## S2 — Execute (R-Type)
+
+Operations
+
+```text
+ALUOut ← A op B
+```
+
+Control Signals
+
+| Signal | Value |
+|---------|:-----:|
+| PCWrite | 0 |
+| PCWriteCond | 0 |
+| MemRead | 0 |
+| MemWrite | 0 |
+| IRWrite | 0 |
+| RegWrite | 0 |
+| IorD | X |
+| MemtoReg | X |
+| ALUSrcA | 1 |
+| ALUSrcB | 00 |
+| ALUOp | 10 |
+| PCSource | XX |
+
+---
+
+## S3 — Execute (I-Type)
+
+Operations
+
+```text
+ALUOut ← A op Immediate
+```
+
+Control Signals
+
+| Signal | Value |
+|---------|:-----:|
+| PCWrite | 0 |
+| PCWriteCond | 0 |
+| MemRead | 0 |
+| MemWrite | 0 |
+| IRWrite | 0 |
+| RegWrite | 0 |
+| IorD | X |
+| MemtoReg | X |
+| ALUSrcA | 1 |
+| ALUSrcB | 10 |
+| ALUOp | 10 |
+| PCSource | XX |
+
+---
+
+## S4 — Address Calculation
+
+Operations
+
+```text
+ALUOut ← A + Immediate
+```
+
+Control Signals
+
+| Signal | Value |
+|---------|:-----:|
+| PCWrite | 0 |
+| PCWriteCond | 0 |
+| MemRead | 0 |
+| MemWrite | 0 |
+| IRWrite | 0 |
+| RegWrite | 0 |
+| IorD | X |
+| MemtoReg | X |
+| ALUSrcA | 1 |
+| ALUSrcB | 10 |
+| ALUOp | 00 |
+| PCSource | XX |
+
+---
+
+## S5 — Memory Read
+
+Operations
+
+```text
+MDR ← Memory[ALUOut]
+```
+
+Control Signals
+
+| Signal | Value |
+|---------|:-----:|
+| PCWrite | 0 |
+| PCWriteCond | 0 |
+| MemRead | 1 |
+| MemWrite | 0 |
+| IRWrite | 0 |
+| RegWrite | 0 |
+| IorD | 1 |
+| MemtoReg | X |
+| ALUSrcA | X |
+| ALUSrcB | XX |
+| ALUOp | XX |
+| PCSource | XX |
+
+---
+
+## S6 — Memory Write
+
+Operations
+
+```text
+Memory[ALUOut] ← B
+```
+
+Control Signals
+
+| Signal | Value |
+|---------|:-----:|
+| PCWrite | 0 |
+| PCWriteCond | 0 |
+| MemRead | 0 |
+| MemWrite | 1 |
+| IRWrite | 0 |
+| RegWrite | 0 |
+| IorD | 1 |
+| MemtoReg | X |
+| ALUSrcA | X |
+| ALUSrcB | XX |
+| ALUOp | XX |
+| PCSource | XX |
+
+---
+
+## S7 — Register Write Back
+
+Operations
+
+```text
+Register[rd] ← ALUOut
+```
+
+Control Signals
+
+| Signal | Value |
+|---------|:-----:|
+| PCWrite | 0 |
+| PCWriteCond | 0 |
+| MemRead | 0 |
+| MemWrite | 0 |
+| IRWrite | 0 |
+| RegWrite | 1 |
+| IorD | X |
+| MemtoReg | 0 |
+| ALUSrcA | X |
+| ALUSrcB | XX |
+| ALUOp | XX |
+| PCSource | XX |
+
+---
+
+## S8 — Load Write Back
+
+Operations
+
+```text
+Register[rd] ← MDR
+```
+
+Control Signals
+
+| Signal | Value |
+|---------|:-----:|
+| PCWrite | 0 |
+| PCWriteCond | 0 |
+| MemRead | 0 |
+| MemWrite | 0 |
+| IRWrite | 0 |
+| RegWrite | 1 |
+| IorD | X |
+| MemtoReg | 1 |
+| ALUSrcA | X |
+| ALUSrcB | XX |
+| ALUOp | XX |
+| PCSource | XX |
+
+---
+
+## S9 — Branch
+
+Operations
+
+```text
+Compare A and B
+
+If branch condition is TRUE
+
+PC ← ALUOut
+```
+
+Control Signals
+
+| Signal | Value |
+|---------|:-----:|
+| PCWrite | 0 |
+| PCWriteCond | 1 |
+| MemRead | 0 |
+| MemWrite | 0 |
+| IRWrite | 0 |
+| RegWrite | 0 |
+| IorD | X |
+| MemtoReg | X |
+| ALUSrcA | 1 |
+| ALUSrcB | 00 |
+| ALUOp | 01 |
+| PCSource | 01 |
+
+---
+
+## S10 — Jump
+
+Operations
+
+```text
+PC ← Jump Target
+
+Register[rd] ← PC + 4
+```
+
+Control Signals
+
+Depends on the final implementation of the jump datapath.
+
+---
+
+## S11 — U-Type
+
+Operations
+
+```text
+LUI:
+Register[rd] ← Immediate
+
+AUIPC:
+Register[rd] ← PC + Immediate
+```
+
+Control Signals
+
+Depends on the final implementation of the U-Type datapath.
+
+---
 
 # 7. State Transition Diagram
 
-```text
-                    +------+
-                    | S0   |
-                    |Fetch |
-                    +------+
-                        │
-                        ▼
-                    +------+
-                    | S1   |
-                    |Decode|
-                    +------+
-       ┌─────────────┼──────────────┬─────────────┬─────────────┬─────────────┐
-       ▼             ▼              ▼             ▼             ▼             ▼
-   +------+      +------+       +------+      +------+      +------+      +------+
-   | S2   |      | S3   |       | S4   |      | S9   |      | S10  |      | S11  |
-   |R-Type|      |I-Type|       |Addr  |      |Branch|      | Jump |      |U-Type|
-   +------+      +------+       +------+      +------+      +------+      +------+
-       │             │           ┌──┴──┐           │             │             │
-       ▼             ▼           ▼     ▼           ▼             ▼             ▼
-   +------+      +------+    +------+ +------+  +------+     +------+     +------+
-   | S7   |      | S7   |    | S5   | | S6   |  | S0   |     | S7   |     | S7   |
-   |WB ALU|      |WB ALU|    |Mem Rd| |Mem Wr|  |Fetch |     |WB Jmp|     |WB U  |
-   +------+      +------+    +------+ +------+  +------+     +------+     +------+
-                                  │                                   │
-                                  ▼                                   ▼
-                              +------+
-                              | S8   |
-                              |WB LW |
-                              +------+
-                                  │
-                                  ▼
-                              +------+
-                              | S0   |
-                              |Fetch |
-                              +------+
-```
-
-| Instruction Type                                    | Path                        |
-| --------------------------------------------------- | --------------------------- |
-| R-Type                                              | S0 → S1 → S2 → S7 → S0      |
-| I-Type (ALU Immediate)                              | S0 → S1 → S3 → S7 → S0      |
-| Load (`lw`)                                         | S0 → S1 → S4 → S5 → S8 → S0 |
-| Store (`sw`)                                        | S0 → S1 → S4 → S6 → S0      |
-| Branch (`beq`, `bne`, `blt`, `bge`, `bltu`, `bgeu`) | S0 → S1 → S9 → S0           |
-| Jump (`jal`, `jalr`)                                | S0 → S1 → S10 → S7 → S0     |
-| U-Type (`lui`, `auipc`)                             | S0 → S1 → S11 → S7 → S0     |
-
+<img width="784" height="881" alt="image" src="https://github.com/user-attachments/assets/ffcb6b0f-333c-4531-bf3e-66731766a65a" />
 
 ---
 
