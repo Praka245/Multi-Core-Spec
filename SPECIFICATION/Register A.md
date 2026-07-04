@@ -85,38 +85,6 @@ A ← 0x00000000
 
 ---
 
-## Operand Load
-
-During the Instruction Decode stage,
-
-```text
-AWrite = 1
-```
-
-The register loads the value read from the Register File.
-
-```text
-A ← read_data1
-```
-
----
-
-## Hold Operation
-
-During the Execute, Memory, and Write-Back stages,
-
-```text
-AWrite = 0
-```
-
-The register retains its previous value.
-
-```text
-A ← A
-```
-
----
-
 # 7. Timing Specification
 
 | Item | Specification |
@@ -154,7 +122,6 @@ A_out = 32'h00000000
 
 | Signal | Source |
 |--------|--------|
-| `AWrite` | Control FSM |
 | `clk` | System Clock |
 | `reset` | System Reset |
 
@@ -170,19 +137,6 @@ The source operand must be preserved for subsequent stages while the Register Fi
 
 Register A stores the first source operand until it is required by the ALU.
 
----
-
-## Why Use `AWrite`?
-
-The operand should only be captured during the Decode stage.
-
-```text
-AWrite = 1  → Load operand
-
-AWrite = 0  → Hold operand
-```
-
-This prevents the register from unintentionally capturing new data during later execution stages.
 
 ---
 
@@ -212,8 +166,6 @@ This module can later support:
 The testbench shall verify:
 
 - Reset clears Register A.
-- Register A loads `read_data1` when `AWrite = 1`.
-- Register A holds its value when `AWrite = 0`.
 - Consecutive operand loads.
 - Reset during processor operation.
 
@@ -237,6 +189,5 @@ The testbench shall verify:
 | Register Width | 32 bits |
 | Trigger | Positive-edge clock |
 | Reset | Active-low asynchronous |
-| Enable | `AWrite` |
 | Input | `read_data1` |
 | Output | `A_out` |
