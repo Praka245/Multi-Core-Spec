@@ -158,7 +158,7 @@ RV32I uses a **32-bit address space**; therefore, the Program Counter is impleme
 
 ---
 
-## Why include `pc_write`?
+## Why include `pc_write_enb`?
 
 In a **Multi-Cycle Processor**, the Program Counter **must not** change every clock cycle.
 
