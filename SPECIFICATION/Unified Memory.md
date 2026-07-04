@@ -39,8 +39,8 @@ Only **one memory operation** (instruction fetch or data access) occurs during a
 |--------|------:|-----------|-------------|
 | `clk` | 1 | Input | System clock |
 | `reset` | 1 | Input | Active-low asynchronous reset |
-| `mem_read` | 1 | Input | Enables memory read operation |
-| `mem_write` | 1 | Input | Enables memory write operation |
+| `MemRead` | 1 | Input | Enables memory read operation |
+| `MemWrite` | 1 | Input | Enables memory write operation |
 | `address` | 32 | Input | Byte address supplied by the IorD MUX |
 | `write_data` | 32 | Input | Data to be written into memory during Store instructions |
 
@@ -124,8 +124,8 @@ is used to access the memory.
 When
 
 ```text
-mem_read = 1
-mem_write = 0
+MemRead = 1
+MemWrite = 0
 ```
 
 and the IorD MUX selects the Program Counter,
@@ -145,8 +145,8 @@ The instruction is then loaded into the **Instruction Register (IR)**.
 When
 
 ```text
-mem_read = 1
-mem_write = 0
+MemRead = 1
+MemWrite = 0
 ```
 
 and the IorD MUX selects the ALUOut register,
@@ -166,8 +166,8 @@ The data is then loaded into the **Memory Data Register (MDR)**.
 When
 
 ```text
-mem_write = 1
-mem_read = 0
+MemWrite = 1
+MemRead = 0
 ```
 
 the memory performs
@@ -240,8 +240,8 @@ ALUOut ------------>| IorD MUX  |
 
 | Signal | Source |
 |--------|--------|
-| `mem_read` | Control FSM |
-| `mem_write` | Control FSM |
+| `MemRead` | Control FSM |
+| `MemWrite` | Control FSM |
 | `address` | IorD MUX |
 | `write_data` | Register B |
 
@@ -320,10 +320,10 @@ The testbench shall verify:
 | Memory Type | Unified |
 | Data Width | 32 bits |
 | Address Width | 32 bits |
-| Memory Depth | 64 × 32 bits |
-| Total Size | 256 Bytes |
+| Memory Depth | DEPTH × 32 bits |
+| Total Size | Based on `DEPTH` size Bytes |
 | Read | Combinational |
 | Write | Positive-edge clock |
 | Addressing | Byte Addressable (`address[31:2]`) |
 | Outputs | `read_data` |
-| Inputs | `clk`, `reset`, `mem_read`, `mem_write`, `address`, `write_data` |
+| Inputs | `clk`, `reset`, `MemRead`, `MemWrite`, `address`, `write_data` |
