@@ -87,13 +87,13 @@ Instruction Fetch
 Instruction Decode
         │
         ▼
-Execute
+    Execute
         │
         ▼
 Memory Access
         │
         ▼
-Write Back
+    Write Back
 ```
 
 Different instruction types visit different states.
@@ -124,228 +124,7 @@ These state numbers are recommendations and may be modified during implementatio
 
 # 6. State Operations
 
-## S0 — Instruction Fetch
 
-Operations performed
-
-```text
-Memory Address = PC
-
-Read Instruction
-
-IR ← Memory
-
-PC ← PC + 4
-```
-
-Control Signals
-
-
-```text
-PCWrite      = 1
-IRWrite      = 1
-MemRead      = 1
-IorD         = 0
-ALUSrcA      = 0
-ALUSrcB      = 01
-PCSource     = 00
-ALUOp        = ADD
-ALUOutWrite  = 0
-```
-
----
-
-## S1 — Instruction Decode
-
-Operations
-
-```text
-Read Register File
-
-A ← rs1
-
-B ← rs2
-
-Generate Immediate
-```
-
-Control Signals
-
-```text
-AWrite = 1
-
-BWrite = 1
-```
-
----
-
-## S2 — Execute (R-Type)
-
-Operations
-
-```text
-ALU(A,B)
-
-ALUOut ← Result
-```
-
----
-
-## S3 — Execute (I-Type)
-
-Operations
-
-```text
-ALU(A, Immediate)
-
-ALUOut ← Result
-```
-
----
-
-## S4 — Address Calculation
-
-Operations
-
-```text
-Effective Address
-
-=
-
-Base Register
-
-+
-
-Immediate
-```
-
-Result
-
-```text
-ALUOut ← Address
-```
-
----
-
-## S5 — Memory Read
-
-Operations
-
-```text
-Memory
-
-↓
-
-MDR
-```
-
----
-
-## S6 — Memory Write
-
-Operations
-
-```text
-Memory[ALUOut]
-
-←
-
-Register B
-```
-
----
-
-## S7 — Write Back (ALU)
-
-Operations
-
-```text
-Register File
-
-←
-
-ALUOut
-```
-
----
-
-## S8 — Write Back (Load)
-
-Operations
-
-```text
-Register File
-
-←
-
-MDR
-```
-
----
-
-## S9 — Branch
-
-Operations
-
-```text
-Compare
-
-A
-
-and
-
-B
-
-If branch true
-
-PC ← Branch Target
-```
-
----
-
-## S10 — Jump
-
-Operations
-
-```
-
-PC ← Jump Target
-
-rd ← PC + 4
-
-```
-
-For:
-```
-- `jal`
-- `jalr`
-```
-
----
-
-## S11 — U-Type
-
-Operations
-
-```text
-LUI
-
-↓
-
-Write Immediate to Register
-
-AUIPC
-
-↓
-
-ALU computes PC + Immediate
-
-↓
-
-Write Result to Register
-```
-
----
 
 # 7. State Transition Diagram
 
@@ -398,6 +177,8 @@ Write Result to Register
 
 
 ---
+
+>
 
 ## ALUControl Encoding 
 
@@ -452,6 +233,7 @@ ALU ctrl table:
 | 10    | 0010011 | 011    | XXXXXXX | SLTU       | SLTIU       |
 | 11    | 0110111 | XXX    | XXXXXXX | PASS B     | LUI         |
 
+>
 
 ---
 
@@ -527,7 +309,6 @@ Write Back
 
 ---
 
-# 10. Design Assumptions
 
 # 10. Design Assumptions
 
