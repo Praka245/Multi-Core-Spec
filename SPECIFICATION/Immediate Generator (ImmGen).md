@@ -48,7 +48,7 @@ The Immediate Generator performs the following functions:
 
 | Signal | Width | Direction | Description |
 |--------|------:|-----------|-------------|
-| `imm_out` | 32 | Output | Generated 32-bit immediate value |
+| `ImmExt` | 32 | Output | Generated 32-bit immediate value |
 
 ---
 
