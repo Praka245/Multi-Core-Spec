@@ -305,7 +305,6 @@ The testbench shall verify:
 - Instruction fetch using the Program Counter.
 - Load (`lw`) operation.
 - Store (`sw`) operation.
-- Correct byte-address to word-index conversion (`address[31:2]`).
 - Simultaneous assertion of `mem_read` and `mem_write` is not allowed.
 - Boundary address accesses.
 - Consecutive read and write operations.
