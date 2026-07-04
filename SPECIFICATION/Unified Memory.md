@@ -61,7 +61,7 @@ Only **one memory operation** (instruction fetch or data access) occurs during a
 | Memory Organization | Unified (Instruction + Data) |
 | Data Width | 32 bits |
 | Address Width | 32 bits |
-| Memory Type | Byte Addressable |
+| Memory Type | Word Addressable (32 - bit) |
 | Access Width | Word (32-bit) |
 
 ---
@@ -72,17 +72,17 @@ For our first implementation,
 
 | Item | Value |
 |------|-------|
-| Number of Words | 64 |
+| Number of Words | 256 or 1024 |
 | Word Width | 32 bits |
-| Total Memory Size | 256 Bytes |
+| Total Memory Size | 1KB or 4KB |
 
 Memory declaration:
 
 ```verilog
-reg [31:0] memory [0:63];
+reg [31:0] memory [0: DEPTH - 1];
 ```
 
-This depth can later be parameterized for larger programs.
+Here `DEPTH` can be parameterized.
 
 ---
 
@@ -93,12 +93,12 @@ Since the processor is **byte-addressable**, the Program Counter increments by *
 Therefore,
 
 ```text
-Memory Index = Address[31:2]
+Memory Index = Address[31:2]  or [pc >> 2]
 ```
 
 Examples:
 
-| Byte Address | Memory Index |
+| Byte Address (PC output) | Memory Index |
 |-------------:|-------------:|
 | 0 | 0 |
 | 4 | 1 |
@@ -309,17 +309,6 @@ The testbench shall verify:
 - Simultaneous assertion of `mem_read` and `mem_write` is not allowed.
 - Boundary address accesses.
 - Consecutive read and write operations.
-
----
-
-# 16. Hardware Resources
-
-| Resource | Quantity |
-|----------|---------:|
-| Memory Array | 64 × 32 bits |
-| Total Storage | 256 Bytes |
-| Read Port | 1 |
-| Write Port | 1 |
 
 ---
 
