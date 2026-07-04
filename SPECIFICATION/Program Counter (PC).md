@@ -93,7 +93,7 @@ On every positive edge of the clock,
 If
 
 ```text
-pc_write = 1
+pc_write_enb = 1
 ```
 
 then
@@ -145,7 +145,7 @@ This ensures execution always starts from address zero after reset.
 |--------|--------|
 | `clk` | System Clock |
 | `reset` | System Reset |
-| `pc_write` | Control FSM |
+| `pc_write_enb` | Control FSM |
 | `pc_next` | PCSource MUX |
 
 ---
@@ -210,8 +210,8 @@ No functional modification is required.
 The testbench shall verify:
 
 - Reset initializes the PC to `0x00000000`.
-- PC updates correctly when `pc_write = 1`.
-- PC holds its value when `pc_write = 0`.
+- PC updates correctly when `pc_write_enb = 1`.
+- PC holds its value when `pc_write_enb = 0`.
 - PC accepts sequential addresses (`PC + 4`).
 - PC accepts branch target addresses.
 - PC accepts jump target addresses.
@@ -241,6 +241,6 @@ The testbench shall verify:
 | Type | Register |
 | Trigger | Positive-edge clock |
 | Reset | Active-low asynchronous |
-| Enable | `pc_write` |
+| Enable | `pc_write_enb` |
 | Output | `pc` |
-| Inputs | `clk`, `reset`, `pc_write`, `pc_next` |
+| Inputs | `clk`, `reset`, `pc_write_enb`, `pc_next` |
