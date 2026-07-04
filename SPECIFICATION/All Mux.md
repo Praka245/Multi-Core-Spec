@@ -94,7 +94,7 @@ Selects the first operand for the ALU.
 | Signal | Width | Description |
 |--------|------:|-------------|
 | `pc` | 32 | Program Counter |
-| `reg_a` | 32 | Register A Output |
+| `A_out` | 32 | Register A Output |
 | `ALUSrcA` | 1 | Select signal from Control FSM |
 
 ### Output
@@ -158,10 +158,9 @@ Selects one of four ALU operands.
 
 | Signal | Width | Description |
 |--------|------:|-------------|
-| `reg_b` | 32 | Register B Output |
+| `B_out` | 32 | Register B Output |
 | `constant_4` | 32 | Constant value 4 |
-| `imm` | 32 | Immediate Generator Output |
-| `branch_offset` | 32 | Branch Immediate (Shifted) |
+| `ImmExt` | 32 | Immediate Generator Output |
 | `ALUSrcB` | 2 | Select signal from Control FSM |
 
 ### Output
