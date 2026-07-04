@@ -38,7 +38,6 @@ The Register B performs the following functions:
 |--------|------:|-----------|-------------|
 | `clk` | 1 | Input | System clock |
 | `reset` | 1 | Input | Active-low asynchronous reset |
-| `BWrite` | 1 | Input | Enables loading of Register B |
 | `read_data2` | 32 | Input | Operand read from Register File (`rs2`) |
 
 ---
@@ -86,37 +85,6 @@ the register is cleared.
 B ← 0x00000000
 ```
 
----
-
-## Operand Load
-
-During the Instruction Decode stage,
-
-```text
-BWrite = 1
-```
-
-The register loads the value read from the Register File.
-
-```text
-B ← read_data2
-```
-
----
-
-## Hold Operation
-
-During the Execute, Memory, and Write-Back stages,
-
-```text
-BWrite = 0
-```
-
-The register retains its previous value.
-
-```text
-B ← B
-```
 
 ---
 
@@ -156,7 +124,6 @@ B_out = 32'h00000000
 
 | Signal | Source |
 |--------|--------|
-| `BWrite` | Control FSM |
 | `clk` | System Clock |
 | `reset` | System Reset |
 
@@ -174,21 +141,6 @@ Register B stores this operand until it is required by either:
 
 - The ALU (arithmetic, logical, branch, address calculation)
 - The Unified Memory (Store instructions)
-
----
-
-## Why Use `BWrite`?
-
-The operand should only be captured during the Decode stage.
-
-```text
-BWrite = 1  → Load operand
-
-BWrite = 0  → Hold operand
-```
-
-This prevents Register B from unintentionally capturing new values during later execution stages.
-
 ---
 
 # 12. Design Assumptions
@@ -217,10 +169,7 @@ This module can later support:
 The testbench shall verify:
 
 - Reset clears Register B.
-- Register B loads `read_data2` when `BWrite = 1`.
-- Register B holds its value when `BWrite = 0`.
 - Register B correctly supplies Operand B to the ALU.
-- Register B correctly supplies `write_data` to the Unified Memory during Store instructions.
 - Consecutive operand loads.
 - Reset during processor operation.
 
@@ -244,6 +193,5 @@ The testbench shall verify:
 | Register Width | 32 bits |
 | Trigger | Positive-edge clock |
 | Reset | Active-low asynchronous |
-| Enable | `BWrite` |
 | Input | `read_data2` |
 | Output | `B_out` |
