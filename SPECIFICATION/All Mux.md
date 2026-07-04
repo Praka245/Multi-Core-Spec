@@ -298,7 +298,7 @@ Selects either the ALUOut register or the Memory Data Register.
 | Signal | Width | Description |
 |--------|------:|-------------|
 | `alu_out` | 32 | ALUOut Register |
-| `mdr` | 32 | Memory Data Register |
+| `mdr_out` | 32 | Memory Data Register |
 | `MemtoReg` | 1 | Select signal from Control FSM |
 
 ### Output
