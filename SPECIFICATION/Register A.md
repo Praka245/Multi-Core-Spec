@@ -34,7 +34,7 @@ The Register A performs the following functions:
 | Signal | Width | Direction | Description |
 |--------|------:|-----------|-------------|
 | `clk` | 1 | Input | System clock |
-| `reset` | 1 | Input | Active-low asynchronous reset |
+| `reset` | 1 | Input | Active-low asynchronous reset |
 | `read_data1` | 32 | Input | Operand read from Register File (`rs1`) |
 
 ---
