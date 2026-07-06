@@ -117,7 +117,7 @@ Selects the first operand for the ALU.
 ## Logic
 
 ```verilog
-assign alu_src_a = (ALUSrcA) ? reg_a : pc;
+assign alu_src_a = (ALUSrcA) ? A_out : pc;
 ```
 
 ---
