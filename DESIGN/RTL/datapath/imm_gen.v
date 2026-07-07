@@ -34,6 +34,9 @@ module imm_gen(instruction,ImmExt);
 			// I - type
 			7'b0010011 : ImmExt = {{20{instruction[31]}}, instruction[31:20]};
 			
+			// (JALR) 
+			7'b1100111 : ImmExt = {{20{instruction[31]}}, instruction[31:20]};
+			
 			// S - type 
 			7'b0100011 : ImmExt = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]};
 			
@@ -45,9 +48,6 @@ module imm_gen(instruction,ImmExt);
 			
 			// J - type  (JAL)
 			7'b1101111 : ImmExt = {{11{instruction[31]}}, instruction[31], instruction[19:12], instruction[20], instruction[30:21], 1'b0};
-		
-			// (JALR)
-			7'b1100111 : ImmExt = {{20{instruction[31]}}, instruction[31:20]};
 			
 			default    : ImmExt = 32'd0;
 		
