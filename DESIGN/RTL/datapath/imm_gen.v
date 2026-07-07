@@ -38,7 +38,7 @@ module imm_gen(instruction,ImmExt);
 			7'b0100011 : ImmExt = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]};
 			
 			// B - type 
-			7'b1100011 : ImmExt = {{20{instruction[31]}}, instruction[31], instruction[7], instruction[30:25], instruction[11:6], 1'b0};
+			7'b1100011 : ImmExt = {{19{instruction[31]}}, instruction[31], instruction[7], instruction[30:25], instruction[11:8], 1'b0};
 			
 			// U - type 
 			7'b0110111 : ImmExt = {instruction[31:12], 12'd0};
