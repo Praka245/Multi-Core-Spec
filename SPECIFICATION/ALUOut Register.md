@@ -41,7 +41,6 @@ The ALUOut Register performs the following functions:
 |--------|------:|-----------|-------------|
 | `clk` | 1 | Input | System clock |
 | `reset` | 1 | Input | Active-low asynchronous reset |
-| `ALUOutWrite` | 1 | Input | Enables loading of the ALUOut Register |
 | `alu_result` | 32 | Input | Output from the ALU |
 
 ---
@@ -92,37 +91,6 @@ ALUOut ← 0x00000000
 
 ---
 
-## Result Load
-
-Whenever the Control FSM asserts
-
-```text
-ALUOutWrite = 1
-```
-
-the ALU result is stored.
-
-```text
-ALUOut ← alu_result
-```
-
----
-
-## Hold Operation
-
-When
-
-```text
-ALUOutWrite = 0
-```
-
-the register retains its previous value.
-
-```text
-ALUOut ← ALUOut
-```
-
----
 
 # 7. Typical Uses
 
@@ -268,7 +236,6 @@ alu_out = 32'h00000000
 
 | Signal | Source |
 |--------|--------|
-| `ALUOutWrite` | Control FSM |
 | `clk` | System Clock |
 | `reset` | System Reset |
 
@@ -288,31 +255,7 @@ Therefore, the ALUOut Register temporarily stores the ALU output until it is con
 
 ---
 
-## Why Use `ALUOutWrite`?
 
-The ALU produces outputs during several stages of execution.
-
-Only the required results should be stored.
-
-```text
-ALUOutWrite = 1
-
-↓
-
-Load new ALU result
-```
-
-```text
-ALUOutWrite = 0
-
-↓
-
-Hold previous value
-```
-
-This provides explicit control over when the ALU result is captured.
-
----
 
 # 13. Design Assumptions
 
@@ -340,8 +283,6 @@ This module can later support:
 The testbench shall verify:
 
 - Reset clears the ALUOut Register.
-- ALU result is captured when `ALUOutWrite = 1`.
-- Register holds its value when `ALUOutWrite = 0`.
 - Arithmetic result storage.
 - Effective address storage for `lw`.
 - Effective address storage for `sw`.
@@ -369,6 +310,5 @@ The testbench shall verify:
 | Register Width | 32 bits |
 | Trigger | Positive-edge clock |
 | Reset | Active-low asynchronous |
-| Enable | `ALUOutWrite` |
 | Input | `alu_result` |
 | Output | `alu_out` |
