@@ -1,7 +1,7 @@
 /*
 ==============================================================================
  Project      : RV32I Multi-Cycle RISC-V Processor
- Module No    : M10
+ Module No    : M8
  Module Name  : imm_gen
  File Name    : imm_gen.v
 
