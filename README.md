@@ -34,9 +34,7 @@ rtl/
 │   └── memtoreg_mux.v
 │
 ├── top/
-│   └── multicycle_core.v
-│
-└── tb/
-    └── multicycle_core_tb.v
+    └── multicycle_core.v
+
 
 ```
