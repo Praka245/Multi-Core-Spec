@@ -17,17 +17,18 @@
  Date Created : 06.07.2026
  Version      : 1
 
- Inputs       : clk , reset , AWrite , 
-			    [31:0]read_data1,
+ Inputs       : clk , reset , read_data1
 
- Outputs      : [31:0]A_out
+ Outputs      : A_out
 
 ==============================================================================
 */
 
-module register_a (input clk , reset , AWrite , 
-input [31:0]read_data1,
-output reg [31:0]A_out );
+module register_a (clk , reset , read_data1, A_out);
+	
+	input clk , reset , AWrite , 
+	input [31:0] read_data1,
+	output reg [31:0] A_out;
 
 always@(posedge clk or negedge reset) 
 	begin 
@@ -37,7 +38,7 @@ always@(posedge clk or negedge reset)
 		end 
 		
 		else begin 
-			if(AWrite) A_out <= read_data1;
+			A_out <= read_data1;
 		end 
 	end 
 
