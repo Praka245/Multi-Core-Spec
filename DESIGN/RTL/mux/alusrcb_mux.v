@@ -22,9 +22,9 @@
 ==============================================================================
 */
 
-module alusrcb_mux(B_out, constant_4, ImmExt, ALUSrcB, alu_src_b);
+module alusrcb_mux(B_out, ImmExt, ALUSrcB, alu_src_b);
 	
-	input [31:0] B_out, constant_4, ImmExt;
+	input [31:0] B_out, ImmExt;
 	input [1:0] ALUSrcB;
 	
 	output reg [31:0] alu_src_b;

@@ -88,7 +88,7 @@ module unified_memory_tb;
             else
             begin
                 MemWrite =1;
-                MemRead =0;
+                MemRead  =0;
                 address = ({$random  % DEPTH})<<2;
                 store_addr[j] = address;
                 j = j+1;
