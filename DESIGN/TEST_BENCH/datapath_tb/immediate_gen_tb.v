@@ -103,7 +103,7 @@ module immediate_generator_tb ;
 	end
 	
 	initial begin
-		$dumpfile("imm.vcd");
+		$dumpfile("SIM/imm.vcd");
 		$dumpvars(0,immediate_generator_tb);
 	end
 endmodule 
