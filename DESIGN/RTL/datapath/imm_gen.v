@@ -32,11 +32,8 @@ module imm_gen(instruction,ImmExt);
 		case (instruction[6:0])
 			
 			// I - type
-			7'b0010011 : ImmExt = {{20{instruction[31]}}, instruction[31:20]};
-			
-			// (JALR) 
-			7'b1100111 : ImmExt = {{20{instruction[31]}}, instruction[31:20]};
-			
+			7'b0010011, 7'b0000011, 7'b1100111 : ImmExt = {{20{instruction[31]}}, instruction[31:20]};
+	
 			// S - type 
 			7'b0100011 : ImmExt = {{20{instruction[31]}}, instruction[31:25], instruction[11:7]};
 			
@@ -44,7 +41,7 @@ module imm_gen(instruction,ImmExt);
 			7'b1100011 : ImmExt = {{19{instruction[31]}}, instruction[31], instruction[7], instruction[30:25], instruction[11:8], 1'b0};
 			
 			// U - type 
-			7'b0110111 : ImmExt = {instruction[31:12], 12'd0};
+			7'b0110111, 7'b0010111 : ImmExt = {instruction[31:12], 12'd0};
 			
 			// J - type  (JAL)
 			7'b1101111 : ImmExt = {{11{instruction[31]}}, instruction[31], instruction[19:12], instruction[20], instruction[30:21], 1'b0};
