@@ -28,7 +28,7 @@ module pc(clk, reset, pc_write_enb, pc_next, pc);
 	input clk, reset, pc_write_enb;
 	input [31:0] pc_next;
 	
-	output [31:0] pc;
+	output reg [31:0] pc;
 	
 	always @(posedge clk or negedge reset)
 		begin 
