@@ -43,6 +43,7 @@ module tb_probe;
             $display("RESULT: SCL NEVER TOGGLED - clock generator never activated");
         $finish;
     end
+    
 
     initial begin
         $dumpfile("i2c_top_tb.vcd");
