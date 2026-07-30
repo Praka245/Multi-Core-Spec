@@ -25,6 +25,9 @@ module i2c (
 	reg [2:0] bit_cnt;
 	reg rwbar;
 	reg [7:0] shift_reg;
+	//reg [7:0] byte0_reg;   // holds first byte while reading second
+	//reg       rd_two;      // 1 = read 2 bytes this transaction (e.g. LM75 temp reg)
+	//reg       byte_sel; 
 	
 	
 	localparam IDLE         = 5'd0,
@@ -65,12 +68,15 @@ module i2c (
 			rwbar    <= 0;
 			tx_data  <= 0;
 			done     <= 0;
+			//byte0_reg<= 0;
+			//rd_two   <= 0;
+		//	byte_sel <= 0;
 		end
 		else begin
 			
 			if (we) begin
                 case (addr)
-                    4'h4:  begin slv_addr <= wdata[7:1]; rwbar <= wdata[0]; end
+                    4'h4:  begin slv_addr <= wdata[7:1]; rwbar <= wdata[0]; rd_two <= wdata[8] end
                     4'h8:  tx_data  <= wdata[7:0];
                     4'h0: begin
                         if (wdata[0] && !busy) begin
@@ -196,6 +202,7 @@ module i2c (
 						begin
 						   state <= sda_in ? ERROR :READDATA;
 						   bit_cnt <= 3'd7;
+						   //byte_sel <= 1'b0;
 						end
 					end
 					
@@ -223,6 +230,25 @@ module i2c (
 						end
 
 					end
+			
+				/*	ACK4 : begin
+						if (rd_two && !byte_sel) begin
+							sda_oe <= 1'b1;          // drive ACK -- more bytes coming
+							if (phase_high) begin
+								byte0_reg <= shift_reg;
+								bit_cnt   <= 3'd7;
+								byte_sel  <= 1'b1;
+								state     <= READDATA;  // go read the second byte
+							end
+						end else begin
+							sda_oe <= 1'b0;           // release SDA = NACK (final byte)
+							if (phase_high) begin
+								rdata <= rd_two ? {16'd0, byte0_reg, shift_reg}
+								                : {24'd0, shift_reg};
+								state <= STOP1;
+							end
+						end
+					end */
 				
 			        STOP1 : begin
 						if(phase_rise)
