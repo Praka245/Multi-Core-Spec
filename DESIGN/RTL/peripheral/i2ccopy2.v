@@ -1,6 +1,6 @@
 // module i2c (
 // 	input   clk, 
-// 	input   scl_hi,
+// 	//input   scl_hi,
 //     input   rst,
 // 	input   we,
 // 	input   phase_low,
@@ -14,6 +14,7 @@
 // 	output reg sda_oe,
 // 	output reg err,
 // 	output reg busy,
+// 	output reg done,
 // 	input sda_in);
 	
 	
@@ -23,7 +24,6 @@
 // 	reg [6:0] slv_reg;
 // 	reg [2:0] bit_cnt;
 // 	reg rwbar;
-// 	reg done;
 // 	reg [7:0] shift_reg;
 	
 	
@@ -80,7 +80,7 @@
 //                 endcase
 //             end
 			
-// 			if (busy && scl_hi) begin
+// 			if (busy) begin
 // 				case(state)
 // 					START1 : begin
 // 						sda_oe <= 0;
@@ -101,11 +101,12 @@
 // 					SLAVE_ADDR_W : begin
 // 						if(phase_fall)
 // 						begin
-// 						sda_oe <= ~shift_reg[7];
+// 							sda_oe <= ~shift_reg[7];
 // 						end
 // 						else if (phase_low)
 // 						begin
 // 							shift_reg <= {shift_reg[6:0], 1'b0};
+							
 // 							if (bit_cnt == 3'd0) state <= ACK1;
 //                             else bit_cnt <= bit_cnt - 1;
 							
@@ -215,6 +216,7 @@
 // 							done  <= 1'b1;
 // 							err   <= 1'b0;    
 // 							state <= IDLE;
+// 							scl_trig <= 0;
 // 						end
 // 					end
 					

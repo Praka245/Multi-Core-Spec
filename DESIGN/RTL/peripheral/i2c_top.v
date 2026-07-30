@@ -2,7 +2,7 @@ module i2c_top (
 	input   clk, 
     input   rst,
 	input   we,
-	input [6:0] addr,
+	input [3:0] addr,
 	input [31:0] wdata,
 	output [31:0] rdata,
 	inout sda,

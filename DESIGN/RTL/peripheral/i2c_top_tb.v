@@ -3,7 +3,7 @@ module tb_probe;
     reg clk = 0;
     reg rst = 1;
     reg we = 0;
-    reg [6:0] addr = 0;
+    reg [3:0] addr = 0;
     reg [31:0] wdata = 0;
     wire [31:0] rdata;
     wire err, busy;
@@ -28,7 +28,7 @@ module tb_probe;
         #20 rst = 0;
         #20;
         // set slave addr = 7'h50, write op (rwbar=0)
-        @(posedge clk); we=1; addr=7'h4; wdata = {25'd0, 7'h50, 1'b0}; @(posedge clk); we=0;
+        @(posedge clk); we=1; addr=7'h4; wdata = {24'd0, 7'h50, 1'b0}; @(posedge clk); we=0;
         // set tx_data (register pointer) = 8'hA0
         @(posedge clk); we=1; addr=7'h8; wdata = 32'h000000A0; @(posedge clk); we=0;
         // kick off transaction

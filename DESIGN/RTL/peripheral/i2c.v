@@ -7,7 +7,7 @@ module i2c (
     input   phase_high,
     input   phase_fall,
 	input   phase_rise,
-	input [6:0] addr,
+	input [3:0] addr,
 	input [31:0] wdata,
 	output reg [31:0] rdata,
 	output reg scl_trig,
@@ -20,28 +20,32 @@ module i2c (
 	
 	reg [6:0] slv_addr;
 	reg [7:0] tx_data;
-	reg [3:0] state;
+	reg [4:0] state;
 	reg [6:0] slv_reg;
 	reg [2:0] bit_cnt;
 	reg rwbar;
 	reg [7:0] shift_reg;
 	
 	
-	localparam IDLE         = 4'd0,
-			   START1       = 4'd1,	
-			   START2       = 4'd2,
-			   SLAVE_ADDR_W = 4'd3,
-			   ACK1         = 4'd4,
-			   REG_ADDR     = 4'd5,
-			   ACK2         = 4'd6,
-			   RESTART      = 4'd7,
-			   SLAVE_ADDR_R = 4'd8,
-			   ACK3         = 4'd9,
-			   READDATA     = 4'd10,
-			   ACK4         = 4'd11,
-			   STOP1        = 4'd12,
-			   STOP2        = 4'd13,
-			   ERROR        = 4'd14;
+	localparam IDLE         = 5'd0,
+			   START1       = 5'd1,	
+			   START2       = 5'd2,
+			   SLAVE_ADDR_W = 5'd3,
+			   WAIT_ACK1    = 5'd4,
+			   ACK1         = 5'd5,
+			   REG_ADDR     = 5'd6,
+			   WAIT_ACK2    = 5'd7,
+			   ACK2         = 5'd8,
+			   RESTART      = 5'd9,
+			   SLAVE_ADDR_R = 5'd10,
+			   WAIT_ACK3    = 5'd11,
+			   ACK3         = 5'd12,
+			   READDATA     = 5'd13,
+			   WAIT_ACK4    = 5'd14,
+			   ACK4         = 5'd15,
+			   STOP1        = 5'd16,
+			   STOP2        = 5'd17,
+			   ERROR        = 5'd18;
 	
 	
 	always @(posedge clk or posedge rst)
@@ -99,23 +103,29 @@ module i2c (
 					end
 					
 					SLAVE_ADDR_W : begin
-						if(phase_fall)
-						begin
-							shift_reg <= {shift_reg[6:0], 1'b0};
-							
-						end
-						else if (phase_low)
+					
+						if (phase_low)
 						begin
 							sda_oe <= ~shift_reg[7];
-							if (bit_cnt == 3'd0) state <= ACK1;
-                            else bit_cnt <= bit_cnt - 1;
-							
 						end
+						
+						else if(phase_rise)
+						begin
+							shift_reg <= {shift_reg[6:0], 1'b0};
+							if (bit_cnt == 3'd0) state <= WAIT_ACK1;
+                            else bit_cnt <= bit_cnt - 1;
+						end
+						
 					end
+					
+					WAIT_ACK1 : begin
+						if(phase_low)
+					     state <= ACK1;
+						end
 					
 					ACK1 : begin
 						sda_oe <= 0;
-						if (phase_high) begin
+						if(phase_high) begin
 							if (sda_in)
 								state <= ERROR;
 							else begin
@@ -135,10 +145,15 @@ module i2c (
 						else if(phase_low)
 						begin
 							sda_oe <= ~shift_reg[7];
-							if (bit_cnt == 3'd0) state <= ACK2;
+							if (bit_cnt == 3'd0) state <= WAIT_ACK2;
                             else bit_cnt <= bit_cnt - 1;
 						end
 					end
+					
+					WAIT_ACK2 : begin
+						if(phase_low)
+					     state <= ACK2;
+						end
 					
 					ACK2 : begin
 					    sda_oe <= 0;
@@ -165,10 +180,15 @@ module i2c (
 						else if (phase_low)
 						begin
 							sda_oe <= ~shift_reg[7];
-							if (bit_cnt == 3'd0) state <= ACK3;
+							if (bit_cnt == 3'd0) state <= WAIT_ACK3;
                             else bit_cnt <= bit_cnt - 1;
 						end
 					end
+					
+					WAIT_ACK3 : begin
+						if(phase_low)
+					     state <= ACK3;
+						end
 					
 					ACK3 : begin
 						sda_oe <= 1'b0;
@@ -183,11 +203,16 @@ module i2c (
 					    if(phase_low)
 						begin
 						    shift_reg <= {shift_reg[6:0], sda_in};
-							if (bit_cnt == 3'd0) state <= ACK4;
+							if (bit_cnt == 3'd0) state <= WAIT_ACK4;
                             else bit_cnt <= bit_cnt - 1;
 						end
 					end
 					
+					WAIT_ACK4 : begin
+						if(phase_low)
+					     state <= ACK4;
+						end
+						
 					ACK4 : begin
 						//if (phase_low)
 							sda_oe <= 1'b0;   // Release SDA = NACK
@@ -201,11 +226,11 @@ module i2c (
 				
 			        STOP1 : begin
 						if(phase_rise)
-							sda_oe <= 0;
+							sda_oe <= 1;
 						else if (phase_high)
 						begin
 							state <= STOP2;
-							sda_oe <= 1;
+							sda_oe <= 0;
 						end
 					end
 					
@@ -213,8 +238,7 @@ module i2c (
 						if (phase_high)
 						begin
 							busy  <= 1'b0;
-							done  <= 1'b1;
-							err   <= 1'b0;    
+							done  <= 1'b1; 
 							state <= IDLE;
 							scl_trig <= 0;
 						end
