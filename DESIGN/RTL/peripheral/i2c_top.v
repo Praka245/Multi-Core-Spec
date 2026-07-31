@@ -1,4 +1,6 @@
-module i2c_top (
+module i2c_top #(
+    parameter SLAVE_ADDR = 7'h3C
+) (
 	input   clk, 
     input   rst,
 	input   we,
@@ -45,6 +47,8 @@ module i2c_top (
 			.busy(busy),
 			.done(done),
 			.sda_in(sda_in));
+
+		
 	
 	
 	    assign sda = sda_oe ? 1'b0:1'bz;

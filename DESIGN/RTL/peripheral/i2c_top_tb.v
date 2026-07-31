@@ -13,10 +13,26 @@ module tb_probe;
     pullup(sda);
     pullup(scl);
 
-    i2c_top dut(
+    i2c_overall_top dut(
         .clk(clk), .rst(rst), .we(we), .addr(addr), .wdata(wdata),
         .rdata(rdata), .sda(sda), .scl(scl), .err(err), .busy(busy),.done(done)
     );
+
+    reg [18*8:1] state;
+
+    always @(dut.state)
+		case(dut.FSM.state)
+			3'b000 : state = "Decode_Address";
+			3'b001 : state = "Load_First_Data";
+			3'b010 : state = "Wait_Till_Empty";
+			3'b011 : state = "Load_Data";
+			3'b100 : state = "Fifo_Full__State";
+			3'b101 : state = "Load_After_Full";
+			3'b110 : state = "Load_Parity";
+			3'b111 : state = "Check_parity_Error";
+			default : state = "Decode_Address";
+		endcase
+
 
     always #5 clk = ~clk;
 
@@ -35,7 +51,7 @@ module tb_probe;
         @(posedge clk); we=1; addr=7'h0; wdata = 32'h1; @(posedge clk); we=0;
 
         // Run for a generous window and report state
-        #200000;
+        #33333;
         $display("TIME=%0t busy=%b err=%b done = %0b scl_toggle_count=%0d rdata=%h", $time, busy, err, done,toggles, rdata);
         if (busy)
             $display("RESULT: STUCK - busy never cleared, transaction never completed");

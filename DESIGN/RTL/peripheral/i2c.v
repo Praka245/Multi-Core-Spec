@@ -76,7 +76,8 @@ module i2c (
 			
 			if (we) begin
                 case (addr)
-                    4'h4:  begin slv_addr <= wdata[7:1]; rwbar <= wdata[0]; rd_two <= wdata[8] end
+                    4'h4:  begin slv_addr <= wdata[7:1]; rwbar <= wdata[0]; //rd_two <= wdata[8] 
+					       end
                     4'h8:  tx_data  <= wdata[7:0];
                     4'h0: begin
                         if (wdata[0] && !busy) begin
