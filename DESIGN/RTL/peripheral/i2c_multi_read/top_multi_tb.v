@@ -67,7 +67,7 @@ module tb_probe;
         // set slave addr = 7'h50, write op (rwbar=0)
         @(posedge clk); we=1; addr=7'h4; wdata = {24'd0, 7'h3C, 1'b1}; @(posedge clk); we=0;
         // set tx_data (register pointer) = 8'hA0
-        @(posedge clk); we=1; addr=7'h8; wdata = 32'h00000002; @(posedge clk); we=0;
+        @(posedge clk); we=1; addr=7'h8; wdata = 32'h00000000; @(posedge clk); we=0;
         // kick off transaction
         @(posedge clk); we=1; addr=7'h9; wdata = 32'h00000004; @(posedge clk); we=0;
         @(posedge clk); we=1; addr=7'h0; wdata = 32'h1; @(posedge clk); we=0;

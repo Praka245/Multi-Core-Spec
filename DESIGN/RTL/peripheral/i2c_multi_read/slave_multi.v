@@ -159,14 +159,37 @@ module i2c_slave_model
           end
         end
 
-       ST_RD_ACK: begin
+//        ST_RD_ACK: begin
+//     if (sda) begin
+//         // Master NACK
+//         state <= ST_IDLE;
+//     end
+//     else begin
+//         state   <= ST_RD_BYTE;
+//         bit_idx <= 3'd7;
+//     end
+// end
+
+ST_RD_ACK: begin
     if (sda) begin
         // Master NACK
         state <= ST_IDLE;
     end
     else begin
-        state   <= ST_RD_BYTE;
+        // Increment register pointer
+        reg_addr <= reg_addr + 1'b1;
+
+        // Load next register
+        case(reg_addr + 1'b1)
+            8'h00: cur_read_byte <= 8'h04;
+            8'h01: cur_read_byte <= 8'h10;
+            8'h02: cur_read_byte <= 8'h55;
+            8'h03: cur_read_byte <= 8'hAA;
+            default: cur_read_byte <= 8'h00;
+        endcase
+
         bit_idx <= 3'd7;
+        state   <= ST_RD_BYTE;
     end
 end
 
