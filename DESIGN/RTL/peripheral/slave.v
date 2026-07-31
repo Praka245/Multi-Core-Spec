@@ -40,6 +40,17 @@ module i2c_slave_model
   reg start_flag;
   reg stop_flag;
 
+  initial begin
+    state      = ST_IDLE;
+    bit_idx    = 3'd7;
+    start_flag = 1'b0;
+    stop_flag  = 1'b0;
+    matched    = 1'b0;
+    is_read    = 1'b0;
+    sda_drive  = 1'b0;
+end
+
+
   // Set start_flag on falling edge of SDA while SCL is high; clear when SCL goes low
   always @(negedge sda or negedge scl) begin
     if (!scl)
@@ -58,6 +69,7 @@ module i2c_slave_model
 
   wire start_or_stop = start_flag | stop_flag;
 
+  
   // ==========================================================================
   // MAIN STATE MACHINE (Single-driver logic on posedge SCL or START/STOP async)
   // ==========================================================================

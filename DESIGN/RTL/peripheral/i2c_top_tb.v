@@ -11,28 +11,22 @@ module tb_probe;
 	wire done;
 
     pullup(sda);
-    pullup(scl);
+     pullup(scl);
 
-    i2c_overall_top dut(
+    i2c_top dut(
         .clk(clk), .rst(rst), .we(we), .addr(addr), .wdata(wdata),
-        .rdata(rdata), .sda(sda), .scl(scl), .err(err), .busy(busy),.done(done)
+        .rdata(rdata),.err(err), .busy(busy),.done(done),.sda(sda),.scl(scl)
     );
 
-    reg [18*8:1] state;
+    parameter SLAVE_ADDR = 7'h3C;
+     i2c_slave_model #(
+        .SLAVE_ADDR(SLAVE_ADDR)
+    )  slave (
+        .scl(scl),
+        .sda(sda)
+    );
 
-    always @(dut.state)
-		case(dut.FSM.state)
-			3'b000 : state = "Decode_Address";
-			3'b001 : state = "Load_First_Data";
-			3'b010 : state = "Wait_Till_Empty";
-			3'b011 : state = "Load_Data";
-			3'b100 : state = "Fifo_Full__State";
-			3'b101 : state = "Load_After_Full";
-			3'b110 : state = "Load_Parity";
-			3'b111 : state = "Check_parity_Error";
-			default : state = "Decode_Address";
-		endcase
-
+    reg [13*8:1] state;  
 
     always #5 clk = ~clk;
 
@@ -40,13 +34,39 @@ module tb_probe;
     initial toggles = 0;
     always @(scl) toggles = toggles + 1;
 
+    always @(dut.i2c_block.state)
+		case(dut.i2c_block.state)
+			5'b000 : state = "IDLE";
+			5'b001 : state = "START1";
+			5'b010 : state = "START2";
+			5'b011 : state = "SLAVE_ADDR_W";
+			5'b100 : state = "WAIT_ACK1";
+			5'b101 : state = "ACK1";
+			5'b110 : state = "REG_ADDR";
+			5'b111 : state = "WAIT_ACK2";
+            5'd8   : state = "ACK2";
+            5'd9   : state = "RESTART";
+            5'd10  : state = "SLAVE_ADDR_R";
+            5'd11  : state = "WAIT_ACK3";
+            5'd12  : state = "ACK3";
+            5'd13  : state = "READDATA";
+            5'd14  : state = "WAIT_ACK4";
+            5'd15  : state = "ACK4";
+            5'd16  : state = "STOP1";
+            5'd17  : state = "STOP2";
+            5'd18  : state = "ERROR";
+
+
+			default : state = "IDLE";
+		endcase
+
     initial begin
         #20 rst = 0;
         #20;
         // set slave addr = 7'h50, write op (rwbar=0)
-        @(posedge clk); we=1; addr=7'h4; wdata = {24'd0, 7'h50, 1'b0}; @(posedge clk); we=0;
+        @(posedge clk); we=1; addr=7'h4; wdata = {24'd0, 7'h3C, 1'b1}; @(posedge clk); we=0;
         // set tx_data (register pointer) = 8'hA0
-        @(posedge clk); we=1; addr=7'h8; wdata = 32'h000000A0; @(posedge clk); we=0;
+        @(posedge clk); we=1; addr=7'h8; wdata = 32'h00000002; @(posedge clk); we=0;
         // kick off transaction
         @(posedge clk); we=1; addr=7'h0; wdata = 32'h1; @(posedge clk); we=0;
 
