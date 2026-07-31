@@ -34,7 +34,7 @@ module tb_probe;
     initial toggles = 0;
     always @(scl) toggles = toggles + 1;
 
-    always @(dut.i2c_block.state)
+     always @(dut.i2c_block.state)
 		case(dut.i2c_block.state)
 			5'b000 : state = "IDLE";
 			5'b001 : state = "START1";
@@ -45,17 +45,16 @@ module tb_probe;
 			5'b110 : state = "REG_ADDR";
 			5'b111 : state = "WAIT_ACK2";
             5'd8   : state = "ACK2";
-            5'd9   : state = "RESTART1";
-            5'd10  : state = "RESTART2";
-            5'd11  : state = "SLAVE_ADDR_R";
-            5'd12  : state = "WAIT_ACK3";
-            5'd13  : state = "ACK3";
-            5'd14  : state = "READDATA";
-            5'd15  : state = "WAIT_ACK4";
-            5'd16  : state = "ACK4";
-            5'd17  : state = "STOP1";
-            5'd18  : state = "STOP2";
-            5'd19  : state = "ERROR";
+            5'd9   : state = "RESTART";
+            5'd10  : state = "SLAVE_ADDR_R";
+            5'd11  : state = "WAIT_ACK3";
+            5'd12  : state = "ACK3";
+            5'd13  : state = "READDATA";
+            5'd14  : state = "WAIT_ACK4";
+            5'd15  : state = "ACK4";
+            5'd16  : state = "STOP1";
+            5'd17  : state = "STOP2";
+            5'd18  : state = "ERROR";
 
 
 			default : state = "IDLE";

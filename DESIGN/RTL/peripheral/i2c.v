@@ -39,17 +39,17 @@ module i2c (
 			   REG_ADDR     = 5'd6,
 			   WAIT_ACK2    = 5'd7,
 			   ACK2         = 5'd8,
-			   RESTART1     = 5'd9,
-			   RESTART2     = 5'd10,
-			   SLAVE_ADDR_R = 5'd11,
-			   WAIT_ACK3    = 5'd12,
-			   ACK3         = 5'd13,
-			   READDATA     = 5'd14,
-			   WAIT_ACK4    = 5'd15,
-			   ACK4         = 5'd16,
-			   STOP1        = 5'd17,
-			   STOP2        = 5'd18,
-			   ERROR        = 5'd19;
+			   RESTART      = 5'd9,
+			   SLAVE_ADDR_R = 5'd10,
+			   WAIT_ACK3    = 5'd11,
+			   ACK3         = 5'd12,
+			   READDATA     = 5'd13,
+			   WAIT_ACK4    = 5'd14,
+			   ACK4         = 5'd15,
+			   STOP1        = 5'd16,
+			   STOP2        = 5'd17,
+			   ERROR        = 5'd18;
+	
 	
 	
 	always @(posedge clk or posedge rst)
@@ -167,23 +167,33 @@ module i2c (
 					ACK2 : begin
 					    sda_oe <= 0;
 						if(phase_high)
-						   state <= sda_in ? ERROR :RESTART1;
+						   state <= sda_in ? ERROR :RESTART;
 						end
 
-					RESTART1 :
-					begin
+					// RESTART1 :
+					// begin
+					// 	if(phase_high)
+					// 	begin
+					// 		// Generate repeated START only
+					// 		sda_oe <= 1'b1;
+					// 		state  <= RESTART2;
+					// 	end
+					// end
+					
+					// RESTART2 :
+					// begin
+					// 	if(phase_low)
+					// 	begin
+					// 		shift_reg <= {slv_addr,rwbar};
+					// 		bit_cnt   <= 3'd7;
+					// 		state     <= SLAVE_ADDR_R;
+					// 	end
+					// end
+
+					RESTART : begin
 						if(phase_high)
 						begin
-							// Generate repeated START only
-							sda_oe <= 1'b1;
-							state  <= RESTART2;
-						end
-					end
-					
-					RESTART2 :
-					begin
-						if(phase_low)
-						begin
+							sda_oe    <= 1'b1;
 							shift_reg <= {slv_addr,rwbar};
 							bit_cnt   <= 3'd7;
 							state     <= SLAVE_ADDR_R;

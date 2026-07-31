@@ -145,13 +145,9 @@ module i2c_slave_model
                 bit_idx <= bit_idx - 1;
         end
 
-        ST_WR_ACK:
-         begin
-            // Wait here.
-            // If a repeated START occurs:
-            //   start_flag will asynchronously move us to ST_ADDR.
-            // If a STOP occurs:
-            //   stop_flag will asynchronously move us to ST_IDLE.
+        ST_WR_ACK: begin
+          state   <= ST_WR_BYTE;
+          bit_idx <= 3'd7;
         end
 
         ST_RD_BYTE: begin
@@ -191,13 +187,7 @@ module i2c_slave_model
     else begin
       case (state)
         ST_ADDR_ACK: sda_drive <= matched;
-        ST_WR_ACK:
-        begin
-            if (!scl)
-                sda_drive <= matched;   // Drive ACK during ACK bit
-            else
-                sda_drive <= 1'b0;      // Release SDA immediately after ACK
-        end
+        ST_WR_ACK:   sda_drive <= matched;
         ST_RD_BYTE:  sda_drive <= !cur_read_byte[bit_idx];
         default:     sda_drive <= 1'b0;
       endcase
