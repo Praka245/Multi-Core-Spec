@@ -144,17 +144,18 @@ module i2c (
 					end
 					
 					REG_ADDR : begin
-						if(phase_fall)
-						begin
-							shift_reg <= {shift_reg[6:0], 1'b0};
-							
-						end
-						else if(phase_low)
+					    if(phase_low)
 						begin
 							sda_oe <= ~shift_reg[7];
 							if (bit_cnt == 3'd0) state <= WAIT_ACK2;
                             else bit_cnt <= bit_cnt - 1;
 						end
+						else if(phase_rise)
+						begin
+							shift_reg <= {shift_reg[6:0], 1'b0};
+							
+						end
+						
 					end
 					
 					WAIT_ACK2 : begin
@@ -179,16 +180,17 @@ module i2c (
 					end
 					
 					SLAVE_ADDR_R : begin
-						if(phase_fall)
-						begin
-							shift_reg <= {shift_reg[6:0], 1'b0};
-							
-						end
-						else if (phase_low)
+						
+						if (phase_low)
 						begin
 							sda_oe <= ~shift_reg[7];
 							if (bit_cnt == 3'd0) state <= WAIT_ACK3;
                             else bit_cnt <= bit_cnt - 1;
+						end
+						else if(phase_rise)
+						begin
+							shift_reg <= {shift_reg[6:0], 1'b0};
+							
 						end
 					end
 					

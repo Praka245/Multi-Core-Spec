@@ -18,6 +18,23 @@ module i2c_slave_model
   reg sda_drive;
   assign sda = sda_drive ? 1'b0 : 1'bz;
 
+  reg bus_ready;   // goes high once scl/sda are first seen at a clean idle '1'
+                    // (masks the simulation-only X glitch before the master's
+                    // own reset settles -- a real bus never starts at X)
+  initial begin
+    state      = 3'd0;
+    bit_idx    = 3'd7;
+    start_flag = 1'b0;
+    stop_flag  = 1'b0;
+    matched    = 1'b0;
+    is_read    = 1'b0;
+    sda_drive  = 1'b0;
+    bus_ready  = 1'b0;
+  end
+
+  always @(posedge scl or posedge sda)
+    if (scl === 1'b1 && sda === 1'b1) bus_ready <= 1'b1;
+
   // FSM State Encoding
   localparam ST_IDLE     = 3'd0;
   localparam ST_ADDR     = 3'd1; 
@@ -40,20 +57,9 @@ module i2c_slave_model
   reg start_flag;
   reg stop_flag;
 
-  initial begin
-    state      = ST_IDLE;
-    bit_idx    = 3'd7;
-    start_flag = 1'b0;
-    stop_flag  = 1'b0;
-    matched    = 1'b0;
-    is_read    = 1'b0;
-    sda_drive  = 1'b0;
-end
-
-
   // Set start_flag on falling edge of SDA while SCL is high; clear when SCL goes low
   always @(negedge sda or negedge scl) begin
-    if (!scl)
+    if (!scl || !bus_ready)
       start_flag <= 1'b0;
     else
       start_flag <= 1'b1;
@@ -61,7 +67,7 @@ end
 
   // Set stop_flag on rising edge of SDA while SCL is high; clear when SCL goes low
   always @(posedge sda or negedge scl) begin
-    if (!scl)
+    if (!scl || !bus_ready)
       stop_flag <= 1'b0;
     else
       stop_flag <= 1'b1;
@@ -69,7 +75,6 @@ end
 
   wire start_or_stop = start_flag | stop_flag;
 
-  
   // ==========================================================================
   // MAIN STATE MACHINE (Single-driver logic on posedge SCL or START/STOP async)
   // ==========================================================================

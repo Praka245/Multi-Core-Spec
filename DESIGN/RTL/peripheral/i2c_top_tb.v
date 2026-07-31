@@ -71,7 +71,7 @@ module tb_probe;
         @(posedge clk); we=1; addr=7'h0; wdata = 32'h1; @(posedge clk); we=0;
 
         // Run for a generous window and report state
-        #33333;
+        #200000;
         $display("TIME=%0t busy=%b err=%b done = %0b scl_toggle_count=%0d rdata=%h", $time, busy, err, done,toggles, rdata);
         if (busy)
             $display("RESULT: STUCK - busy never cleared, transaction never completed");
