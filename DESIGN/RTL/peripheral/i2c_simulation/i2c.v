@@ -231,7 +231,7 @@ module i2c (
 					end
 					
 					READDATA : begin
-					    if(phase_low)
+					    if(phase_low) // it to be phase_high changed in multi read
 						begin
 						    shift_reg <= {shift_reg[6:0], sda_in};
 							if (bit_cnt == 3'd0) state <= WAIT_ACK4;

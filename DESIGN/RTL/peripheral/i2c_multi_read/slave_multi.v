@@ -159,18 +159,16 @@ module i2c_slave_model
           end
         end
 
-        ST_RD_ACK: begin
-          if (sda) begin
-            // Master NACK -> End of Read
-            state <= ST_IDLE;
-          end
-          else begin
-            // Master ACK -> Send next byte from live sensor_data
-            // cur_read_byte <= sensor_data;
-            state         <= ST_RD_BYTE;
-            bit_idx       <= 3'd7;
-          end
-        end
+       ST_RD_ACK: begin
+    if (sda) begin
+        // Master NACK
+        state <= ST_IDLE;
+    end
+    else begin
+        state   <= ST_RD_BYTE;
+        bit_idx <= 3'd7;
+    end
+end
 
         default: state <= ST_IDLE;
       endcase

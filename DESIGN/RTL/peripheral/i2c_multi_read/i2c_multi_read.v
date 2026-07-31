@@ -239,43 +239,42 @@ module i2c (
 							if (bit_cnt == 3'd0) state <= WAIT_ACK4;
                             else bit_cnt <= bit_cnt - 1;
 						end
+						 if (phase_fall&& bit_cnt != 3'd0)
+        					sda_oe <= 1'b0;   
 					end
 					
-					WAIT_ACK4 : begin
-						if(phase_low)
-						begin
-					     state <= ACK4;
-						 if(count == byte_cnt_reg-1)
-								sda_oe <= 1'b0; // Release SDA = NACK
-						    else
-						    	sda_oe <= 1'b1;
+					WAIT_ACK4:
+					begin
+						if (phase_low) begin
+							if (count == byte_cnt_reg-1)
+								sda_oe <= 1'b0;   // NACK
+							else
+								sda_oe <= 1'b1;   // ACK
+
+							state <= ACK4;
 						end
-						end
+					end
 						
 					ACK4 : begin
-						// if (phase_low) begin
-							
-							
-						//  end
-							if (phase_rise) begin
-								sda_oe <= 1'b0;       // <<< Release SDA after ACK
-							end
-						if(phase_high)
-						begin
+
+						// Release SDA
+						// Finish ACK cycle
+						if (phase_high) begin
 							memory[count] <= shift_reg;
-							if(count == byte_cnt_reg-1)
-							state <= STOP1;
-							 else
-							begin
-								shift_reg <= 0;
-								count <= count +1;
+
+							if (count == byte_cnt_reg-1)
+								state <= STOP1;
+							else begin
+								count   <= count + 1;
 								bit_cnt <= 3'd7;
-								state <= READDATA;
+								shift_reg <= 8'd0;
+								state   <= READDATA;
 							end
 						end
 
-						end
-
+						// else if (phase_fall)
+        				// 	sda_oe <= 1'b0;   
+					end
 					
 			
 				/*	ACK4 : begin
