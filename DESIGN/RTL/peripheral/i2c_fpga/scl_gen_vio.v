@@ -77,6 +77,7 @@ begin
    end
    
 end
+
    assign phase_fall = (phase == 2'd0 && count_trigger);
    assign phase_low  = (phase == 2'd1 && count_trigger);
    assign phase_rise = (phase == 2'd2 && count_trigger);
