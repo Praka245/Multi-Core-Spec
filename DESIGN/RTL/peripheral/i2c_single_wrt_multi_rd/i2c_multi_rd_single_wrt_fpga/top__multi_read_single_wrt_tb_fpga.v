@@ -82,10 +82,10 @@ module tb_probe;
     begin
         @(negedge clk); we=1; addr=7'h4; wdata = {24'd0, 7'h53, 1'b1}; @(negedge clk); we=0;
         // set tx_data (register pointer) = 8'hA0
-        @(negedge clk); we=1; addr=7'h5; wdata = 32'h00000008; @(negedge clk); we=0;
+        @(negedge clk); we=1; addr=7'h5; wdata = 32'h00000000; @(negedge clk); we=0;
         @(negedge clk); we=1; addr=7'h8; wdata = 32'h0000002D; @(negedge clk); we=0;
         // kick off transaction
-        @(negedge clk); we=1; addr=7'h9; wdata = 32'h00000000; @(negedge clk); we=0;
+        @(negedge clk); we=1; addr=7'h9; wdata = 32'h00000001; @(negedge clk); we=0;
         @(negedge clk); we=1; addr=7'h0; wdata = 32'h1; @(negedge clk); we=0;
     end
     endtask
@@ -95,11 +95,13 @@ module tb_probe;
         #20;
         // set slave addr = 7'h50, write op (rwbar=0)
         write_data;
-        #100;
+         wait(done)
+       // #20000;
         read_data;
 
         // Run for a generous window and report state
-        #20000;
+        wait(done)
+        //#20000;
         $display("TIME=%0t busy=%b err=%b done = %0b scl_toggle_count=%0d rdata=%h", $time, busy, err, done,toggles, rdata);
         if (busy)
             $display("RESULT: STUCK - busy never cleared, transaction never completed");

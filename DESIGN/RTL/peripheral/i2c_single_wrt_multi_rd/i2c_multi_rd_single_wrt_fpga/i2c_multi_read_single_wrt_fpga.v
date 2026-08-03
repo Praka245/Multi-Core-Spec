@@ -276,7 +276,7 @@ assign rdata = memory[addr_out];
 					    if(phase_high)
 						begin
 						    shift_reg <= {shift_reg[6:0], sda_in};
-							if (bit_cnt == 3'd0) state <= WAIT_ACK4;
+							if (bit_cnt == 3'd0) state <= WAIT_ACK5;
                             else bit_cnt <= bit_cnt - 1;
 						end
 						 if (phase_fall&& bit_cnt != 3'd0)
