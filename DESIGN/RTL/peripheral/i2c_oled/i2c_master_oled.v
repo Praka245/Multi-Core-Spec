@@ -18,7 +18,8 @@ module i2c (
 	output reg busy,
 	output reg done,
 	input sda_in,
-	input oled_control
+	input oled_control,
+	input init
     //input [2:0] byte_cnt
 	);
 	
@@ -34,13 +35,14 @@ module i2c (
 	reg [7:0] data_reg;
 	reg [7:0] command_reg;
 	reg [7:0] init_cmd [0:30];
-	reg [7:0] pix_mem [0:1023]
+	reg [7:0] pix_mem [0:1023];
 	reg [5:0] cmd_cnt;
+	reg [9:0] pix_cnt;
 
     
 	integer i;
 
-	parameter TOTAL_CMD = 31;
+	parameter TOTAL_CMD = 31,TOTAL_PIX = 1024;
 
 	localparam IDLE         = 5'd0,
 			   START1       = 5'd1,	
@@ -54,22 +56,22 @@ module i2c (
 			   WRITE_CMD    = 5'd9,
 			   WAIT_ACK3    = 5'd10,
 			   ACK3         = 5'd11,                                                ////////want to modify here 
-			   REG_ADDR     = 5'd7,
-			   WAIT_ACK2    = 5'd8,
-			   ACK2         = 5'd9,
-			   WRITEDATA    = 5'd10,
-			   WAIT_ACK3    = 5'd11,
-			   ACK3         = 5'd12,  
-			   RESTART      = 5'd13,
-			   SLAVE_ADDR_R = 5'd14,
-			   WAIT_ACK4    = 5'd15,
-			   ACK4         = 5'd16,
-			   READDATA     = 5'd17,
-			   WAIT_ACK5    = 5'd18,
-			   ACK5         = 5'd19,
-			   STOP1        = 5'd20,
-			   STOP2        = 5'd21,
-			   ERROR        = 5'd22;
+			   REG_ADDR     = 5'd12,
+			   WAIT_ACK4    = 5'd13,
+			   ACK4         = 5'd14,
+			   WRITEDATA    = 5'd15,
+			   WAIT_ACK5    = 5'd16,
+			   ACK5         = 5'd17,  
+			   RESTART      = 5'd18,
+			   SLAVE_ADDR_R = 5'd19,
+			   WAIT_ACK6    = 5'd20,
+			   ACK6         = 5'd21,
+			   READDATA     = 5'd22,
+			   WAIT_ACK7    = 5'd23,
+			   ACK7         = 5'd24,
+			   STOP1        = 5'd25,
+			   STOP2        = 5'd26,
+			   ERROR        = 5'd27;
 	
 	reg we_d;
 
@@ -154,18 +156,15 @@ module i2c (
 			// Display ON
 			init_cmd[30] = 8'hAF;
 		end
-		else
-		begin
-			$readmemh("pixel_data");
-		end
    end
+
+   initial  $readmemh("pixel_data.mem",pix_mem);
 	
 	always @(posedge clk or posedge rst)
 	begin
 		if(rst)
 		begin
 			sda_oe   <= 0;
-//			rdata    <= 0;
 			done     <= 1'b0;
 			scl_trig <= 0; 
 			state    <= IDLE;
@@ -181,6 +180,8 @@ module i2c (
 			count    <= 0;
 			data_reg <= 0;
 			command_reg <= 0;
+			pix_cnt  <=0;
+			cmd_cnt  <=0;
 			for(i=0;i<16;i = i+1)
 			memory[i] <= 0;
 		end
@@ -200,6 +201,9 @@ module i2c (
                             state   <= START1;
 							err     <= 0;
 							done    <= 0;
+							cmd_cnt <=0; 
+							pix_cnt <=0; 
+							count   <=0;
                         end
                     end
                     default: begin end
@@ -295,16 +299,17 @@ module i2c (
 							else
 							begin
 								bit_cnt   <= 3'd7;
-								if(!command_reg[7] && !command_reg[6])
+								if(command_reg == 8'h00)
 								begin
 									shift_reg <= init_cmd[0];
 									state     <= WRITE_CMD;
 								end
-								else if(command_reg[7] && !command_reg[6])
+								else if(command_reg == 8'h40)
 								begin
-									shift_reg <= init_cmd[0];
+									shift_reg <= pix_mem[0];
 									state     <= WRITEDATA;
 								end
+								else state <= ERROR;
 							end
 						end
 						end
@@ -362,7 +367,7 @@ module i2c (
 					
 					WAIT_ACK4 : begin
 						if(phase_low)
-					     state <= ACK2;
+					     state <= ACK4;
 						end
 					
 					ACK4 : begin
@@ -383,34 +388,43 @@ module i2c (
 								end
 							end
 						end
-						  // state <= sda_in ? ERROR : rwbar ? RESTART : WRITEDATA;
-						end
+					end
 					
 					WRITEDATA : begin
 						if(phase_low)
 						begin
 							sda_oe <= ~shift_reg[7];
-							if (bit_cnt == 3'd0) state <= WAIT_ACK3;
+							if (bit_cnt == 3'd0) state <= WAIT_ACK5;
                             else bit_cnt <= bit_cnt - 1;
 						end
 						else if(phase_rise)
 						begin
 							shift_reg <= {shift_reg[6:0], 1'b0};
-							
 						end
 					end
 
 					WAIT_ACK5 : begin
 						if(phase_low)
-					     state <= ACK3;
+					     state <= ACK5;
 						end
 					
 					ACK5 : begin
 						sda_oe <= 1'b0;
 						if(phase_high)
 						begin
-						   state <= sda_in ? ERROR : STOP1;
+						   if(sda_in)
+								state <= ERROR;
+						    else if (pix_cnt == TOTAL_PIX-1)
+								state <= STOP1;
+							else
+							begin
+								pix_cnt   <= pix_cnt +1;
+								bit_cnt   <= 3'd7;
+								shift_reg <= pix_mem[pix_cnt+1];
+								state     <= WRITEDATA;
+							end
 						end
+
 					end
 					RESTART : begin
 						if(phase_high)
@@ -427,7 +441,7 @@ module i2c (
 						if (phase_low)
 						begin
 							sda_oe <= ~shift_reg[7];
-							if (bit_cnt == 3'd0) state <= WAIT_ACK4;
+							if (bit_cnt == 3'd0) state <= WAIT_ACK6;
                             else bit_cnt <= bit_cnt - 1;
 						end
 						else if(phase_rise)
@@ -437,12 +451,12 @@ module i2c (
 						end
 					end
 					
-					WAIT_ACK5 : begin
+					WAIT_ACK6 : begin
 						if(phase_low)
-					     state <= ACK4;
+					     state <= ACK6;
 						end
 					
-					ACK5 : begin
+					ACK6 : begin
 						sda_oe <= 1'b0;
 						if(phase_high)
 						begin
@@ -455,14 +469,14 @@ module i2c (
 					    if(phase_high)
 						begin
 						    shift_reg <= {shift_reg[6:0], sda_in};
-							if (bit_cnt == 3'd0) state <= WAIT_ACK5;
+							if (bit_cnt == 3'd0) state <= WAIT_ACK7;
                             else bit_cnt <= bit_cnt - 1;
 						end
 						 if (phase_fall&& bit_cnt != 3'd0)
         					sda_oe <= 1'b0;   
 					end
 					
-					WAIT_ACK6:
+					WAIT_ACK7:
 					begin
 						if (phase_low) begin
 							if (count == byte_cnt_reg-1)
@@ -470,11 +484,11 @@ module i2c (
 							else
 								sda_oe <= 1'b1;   // ACK
 
-							state <= ACK5;
+							state <= ACK7;
 						end
 					end
 						
-					ACK6 : begin
+					ACK7 : begin
 
 						// Release SDA
 						// Finish ACK cycle
