@@ -34,6 +34,7 @@ module i2c (
 	reg [7:0] data_reg;
 	reg [7:0] command_reg;
 	reg [7:0] init_cmd [0:30];
+	reg [7:0] pix_mem [0:1023]
 	reg [5:0] cmd_cnt;
 
     
@@ -86,73 +87,77 @@ module i2c (
    always@(init)
    begin
 		if(init) begin
-				// Display OFF
-init_cmd[0]  = 8'hAE;
+			// Display OFF
+			init_cmd[0]  = 8'hAE;
 
-// Set Display Clock Divide Ratio
-init_cmd[1]  = 8'hD5;
-init_cmd[2]  = 8'h80;
+			// Set Display Clock Divide Ratio
+			init_cmd[1]  = 8'hD5;
+			init_cmd[2]  = 8'h80;
 
-// Set Multiplex Ratio (1/64)
-init_cmd[3]  = 8'hA8;
-init_cmd[4]  = 8'h3F;
+			// Set Multiplex Ratio (1/64)
+			init_cmd[3]  = 8'hA8;
+			init_cmd[4]  = 8'h3F;
 
-// Set Display Offset
-init_cmd[5]  = 8'hD3;
-init_cmd[6]  = 8'h00;
+			// Set Display Offset
+			init_cmd[5]  = 8'hD3;
+			init_cmd[6]  = 8'h00;
 
-// Set Start Line = 0
-init_cmd[7]  = 8'h40;
+			// Set Start Line = 0
+			init_cmd[7]  = 8'h40;
 
-// Enable Charge Pump
-init_cmd[8]  = 8'h8D;
-init_cmd[9]  = 8'h14;
+			// Enable Charge Pump
+			init_cmd[8]  = 8'h8D;
+			init_cmd[9]  = 8'h14;
 
-// Segment Remap
-init_cmd[10] = 8'hA1;
+			// Segment Remap
+			init_cmd[10] = 8'hA1;
 
-// COM Scan Direction (Remapped)
-init_cmd[11] = 8'hC8;
+			// COM Scan Direction (Remapped)
+			init_cmd[11] = 8'hC8;
 
-// COM Pins Hardware Configuration
-init_cmd[12] = 8'hDA;
-init_cmd[13] = 8'h12;
+			// COM Pins Hardware Configuration
+			init_cmd[12] = 8'hDA;
+			init_cmd[13] = 8'h12;
 
-// Contrast Control
-init_cmd[14] = 8'h81;
-init_cmd[15] = 8'hCF;
+			// Contrast Control
+			init_cmd[14] = 8'h81;
+			init_cmd[15] = 8'hCF;
 
-// Pre-charge Period
-init_cmd[16] = 8'hD9;
-init_cmd[17] = 8'hF1;
+			// Pre-charge Period
+			init_cmd[16] = 8'hD9;
+			init_cmd[17] = 8'hF1;
 
-// VCOMH Deselect Level
-init_cmd[18] = 8'hDB;
-init_cmd[19] = 8'h40;
+			// VCOMH Deselect Level
+			init_cmd[18] = 8'hDB;
+			init_cmd[19] = 8'h40;
 
-// Resume RAM Content Display
-init_cmd[20] = 8'hA4;
+			// Resume RAM Content Display
+			init_cmd[20] = 8'hA4;
 
-// Normal Display (Not Inverted)
-init_cmd[21] = 8'hA6;
+			// Normal Display (Not Inverted)
+			init_cmd[21] = 8'hA6;
 
-// Horizontal Addressing Mode
-init_cmd[22] = 8'h20;
-init_cmd[23] = 8'h00;
+			// Horizontal Addressing Mode
+			init_cmd[22] = 8'h20;
+			init_cmd[23] = 8'h00;
 
-// Column Address
-init_cmd[24] = 8'h21;
-init_cmd[25] = 8'h00;
-init_cmd[26] = 8'h7F;
+			// Column Address
+			init_cmd[24] = 8'h21;
+			init_cmd[25] = 8'h00;
+			init_cmd[26] = 8'h7F;
 
-// Page Address
-init_cmd[27] = 8'h22;
-init_cmd[28] = 8'h00;
-init_cmd[29] = 8'h07;
+			// Page Address
+			init_cmd[27] = 8'h22;
+			init_cmd[28] = 8'h00;
+			init_cmd[29] = 8'h07;
 
-// Display ON
-init_cmd[30] = 8'hAF;
-			end
+			// Display ON
+			init_cmd[30] = 8'hAF;
+		end
+		else
+		begin
+			$readmemh("pixel_data");
+		end
    end
 	
 	always @(posedge clk or posedge rst)
@@ -289,9 +294,17 @@ init_cmd[30] = 8'hAF;
 							   state <= ERROR;
 							else
 							begin
-									bit_cnt   <= 3'd7;
+								bit_cnt   <= 3'd7;
+								if(!command_reg[7] && !command_reg[6])
+								begin
+									shift_reg <= init_cmd[0];
+									state     <= WRITE_CMD;
+								end
+								else if(command_reg[7] && !command_reg[6])
+								begin
 									shift_reg <= init_cmd[0];
 									state     <= WRITEDATA;
+								end
 							end
 						end
 						end
@@ -328,8 +341,7 @@ init_cmd[30] = 8'hAF;
 								cmd_cnt   <= cmd_cnt +1;
 								bit_cnt   <= 3'd7;
 								shift_reg <= init_cmd[cmd_cnt+1];
-								state     
-								<= WRITE_CMD;
+								state     <= WRITE_CMD;
 							end
 						end
 					end
@@ -348,12 +360,12 @@ init_cmd[30] = 8'hAF;
 						end
 					end
 					
-					WAIT_ACK3 : begin
+					WAIT_ACK4 : begin
 						if(phase_low)
 					     state <= ACK2;
 						end
 					
-					ACK3 : begin
+					ACK4 : begin
 					    sda_oe <= 0;
 						if(phase_high)
 						begin
@@ -388,12 +400,12 @@ init_cmd[30] = 8'hAF;
 						end
 					end
 
-					WAIT_ACK4 : begin
+					WAIT_ACK5 : begin
 						if(phase_low)
 					     state <= ACK3;
 						end
 					
-					ACK4 : begin
+					ACK5 : begin
 						sda_oe <= 1'b0;
 						if(phase_high)
 						begin
