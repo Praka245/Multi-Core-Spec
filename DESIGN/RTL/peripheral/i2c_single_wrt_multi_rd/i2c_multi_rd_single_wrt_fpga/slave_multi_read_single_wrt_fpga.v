@@ -1,16 +1,10 @@
-// ============================================================================
-// Module Name: i2c_slave_model
-// Description: Synthesizable I2C Slave with dynamic sensor_data input.
-//              Uses dedicated asynchronous flag detectors for START/STOP 
-//              conditions so that `state` and registers have strictly ONE driver.
-// ============================================================================
 module i2c_slave_model
 #(
     parameter SLAVE_ADDR = 7'h53  // 7-bit I2C Slave Address
 )
 (
     input        scl,          // I2C Clock Line
-    inout        sda      // I2C Data Line   // Dynamic 8-bit sensor input (Switches)
+    inout        sda      // I2C Data Line  
 );
 
   reg [7:0] reg_addr;
@@ -55,10 +49,6 @@ module i2c_slave_model
   reg [7:0] cur_read_byte;
   reg       is_read;       
   reg       matched;       
-
-  // ==========================================================================
-  // START & STOP CONDITION DETECTION (Dedicated single-driver flip-flops)
-  // ==========================================================================
   reg start_flag;
   reg stop_flag;
 
