@@ -18,8 +18,7 @@ module i2c (
 	output reg busy,
 	output reg done,
 	input sda_in,
-	input oled_control,
-	input init
+	input oled_control
     //input [2:0] byte_cnt
 	);
 	
@@ -55,7 +54,7 @@ module i2c (
 			   ACK2         = 5'd8,
 			   WRITE_CMD    = 5'd9,
 			   WAIT_ACK3    = 5'd10,
-			   ACK3         = 5'd11,                                                ////////want to modify here 
+			   ACK3         = 5'd11,                                               
 			   REG_ADDR     = 5'd12,
 			   WAIT_ACK4    = 5'd13,
 			   ACK4         = 5'd14,
@@ -86,9 +85,7 @@ module i2c (
 
 	assign rdata = memory[addr_out];
 
-   always@(init)
-   begin
-		if(init) begin
+		initial begin
 			// Display OFF
 			init_cmd[0]  = 8'hAE;
 
@@ -156,7 +153,7 @@ module i2c (
 			// Display ON
 			init_cmd[30] = 8'hAF;
 		end
-   end
+   
 
    initial  $readmemh("pixel_data.mem",pix_mem);
 	
@@ -355,7 +352,7 @@ module i2c (
 					    if(phase_low)
 						begin
 							sda_oe <= ~shift_reg[7];
-							if (bit_cnt == 3'd0) state <= WAIT_ACK2;
+							if (bit_cnt == 3'd0) state <= WAIT_ACK4;
                             else bit_cnt <= bit_cnt - 1;
 						end
 						else if(phase_rise)
@@ -383,7 +380,7 @@ module i2c (
 								end
 								else begin
 									bit_cnt   <= 3'd7;
-									shift_reg <= data_reg;
+									shift_reg <= pix_mem[0];
 									state     <= WRITEDATA;
 								end
 							end

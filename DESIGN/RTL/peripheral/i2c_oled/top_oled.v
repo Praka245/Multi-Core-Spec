@@ -3,37 +3,38 @@ module i2c_top #(
 ) (
 	input   clk, 
     input   rst,
-	input   we,
+	//input   we,
 	input [3:0] addr_out,
-	input [3:0] addr,
-	input [31:0] wdata,
+	//input [3:0] addr,
+	//input [31:0] wdata,
 	output [7:0] rdata,
 	inout sda,
 	inout scl,
 	output err,
 	output done,
-	output busy
+	output busy,
+	input oled_control
     //input [2:0] byte_cnt
     );
 	
 	wire scl_trig,phase_fall,phase_low,
 		 phase_rise,phase_high,sda_oe,sda_in;
 		 
-	// 	 wire  we;
-	// wire [3:0] addr;
-	// wire  [31:0] wdata;
+		 wire  we;
+	wire [3:0] addr;
+	wire  [31:0] wdata;
 	//wire[7:0] rdata;
 		 
-// 	vio_0 vio_inst (
-//     .clk(clk),
+	vio_0 vio_inst (
+    .clk(clk),
 
-//     // Inputs to VIO (signals observed in Hardware Manager)
-//   //  .probe_in0(rdata),
-//     // Outputs from VIO (signals driven from Hardware Manager)
-//     .probe_out0(wdata),
-//     .probe_out1(addr),
-//     .probe_out2(we)
-// ); 
+    // Inputs to VIO (signals observed in Hardware Manager)
+  //  .probe_in0(rdata),
+    // Outputs from VIO (signals driven from Hardware Manager)
+    .probe_out0(wdata),
+    .probe_out1(addr),
+    .probe_out2(we)
+); 
 	
     scl_gen scl_block
 	   (
@@ -65,7 +66,8 @@ module i2c_top #(
 			.err(err),
 			.busy(busy),
 			.done(done),
-			.sda_in(sda_in)
+			.sda_in(sda_in),
+			.oled_control(oled_control)
              );
 
 		
